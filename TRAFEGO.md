@@ -1,0 +1,104 @@
+# Plano de tráfego — PropostaZap
+
+Estratégia: **zero verba de mídia**. Todo o crescimento vem de conteúdo indexável e de
+distribuição orgânica. Anúncio pago fica de fora por decisão, não por limitação.
+
+## A tese
+
+Prestador de serviço não pesquisa “software de orçamento”. Ele pesquisa
+**“modelo de orçamento para pedreiro”**, **“como fazer orçamento de pintura”**,
+**“quanto cobrar por m² de forro”**. São buscas de intenção altíssima, volume distribuído
+em cauda longa e concorrência fraca — a maioria dos resultados hoje é planilha em Excel e
+PDF genérico.
+
+O site responde exatamente essa busca e entrega a ferramenta na mesma página. O visitante
+não precisa se cadastrar para ter valor: cria o orçamento, envia pelo WhatsApp, e o link
+que ele manda carrega a assinatura “Feito com PropostaZap” — cada orçamento enviado vira
+uma impressão de marca para um cliente final.
+
+## O que já está feito e no ar
+
+| Item | Situação |
+|---|---|
+| 39 páginas de profissão com conteúdo próprio, tabela de preços e FAQ | no ar |
+| Índice de modelos agrupado por categoria | no ar |
+| `sitemap.xml` com 42 URLs | no ar |
+| `robots.txt` | no ar |
+| URL canônica em toda página | no ar |
+| Dados estruturados `FAQPage` e `BreadcrumbList` | no ar |
+| Open Graph e Twitter Card (prévia ao compartilhar) | no ar |
+| Submissão ao IndexNow — Bing, Yandex e parceiros | **enviado: 42 URLs, aceito** |
+| Loop de marca: link enviado ao cliente exibe a assinatura | no ar |
+
+Reenviar a qualquer momento, depois de publicar páginas novas:
+
+```bash
+bun run indexnow
+```
+
+## O que depende de você (não consigo fazer sozinho)
+
+Cada item exige login na sua conta — nenhum custa dinheiro.
+
+1. **Google Search Console** — https://search.google.com/search-console
+   Adicionar a propriedade `https://esdrasgomes547-maker.github.io/propostazap/`
+   (tipo “prefixo de URL”), verificar e enviar o sitemap. O Google não aceita IndexNow;
+   é o único caminho de indexação rápida nele, e responde pela maior parte do tráfego.
+
+2. **Bing Webmaster Tools** — https://www.bing.com/webmasters
+   Importa direto do Search Console em um clique. Confirma a chave IndexNow já ativa.
+
+3. **Perfil da Empresa no Google** — se você atende uma região, o perfil aparece no mapa e
+   é o canal orgânico de maior conversão para serviço local.
+
+## Sequência recomendada nas primeiras semanas
+
+**Semana 1 — indexação.** Search Console e Bing configurados. Peça indexação manual das 5
+páginas de profissão mais buscadas (pedreiro, eletricista, pintor, encanador, diarista).
+
+**Semana 2 — distribuição direta.** Grupos de WhatsApp, Facebook e Telegram de prestadores
+por categoria. A postagem que funciona não é anúncio: é a ferramenta como resposta a uma
+dúvida real (“quanto cobro por isso?”), com o link da página da profissão daquele grupo —
+nunca a home.
+
+**Semana 3 — prova.** Peça a 5 usuários reais um print do orçamento que eles enviaram.
+Depoimento de prestador com nome e profissão converte mais que qualquer texto de vendas.
+
+**Semana 4 — cauda longa.** Cada profissão nova é uma página nova. Adicione ao array em
+`src/lib/professions.ts`, rode `bun run build` e `bun run indexnow`. Custo marginal por
+página: zero.
+
+## Modelos de postagem prontos
+
+**Grupo de WhatsApp de prestadores**
+> Fiz uma ferramenta que monta orçamento e já mostra quanto sobra pra você depois do custo.
+> Grátis, não precisa cadastrar. Escolhe a profissão e os serviços já vêm preenchidos:
+> https://esdrasgomes547-maker.github.io/propostazap/
+
+**Grupo de Facebook por categoria** (trocar a URL pela página da profissão do grupo)
+> Vi bastante gente aqui perguntando quanto cobrar. Montei uma página com os serviços mais
+> pedidos de [profissão] e faixa de preço de referência, e dá pra gerar o orçamento na hora
+> e mandar pro cliente pelo WhatsApp. Sem cadastro:
+> https://esdrasgomes547-maker.github.io/propostazap/modelo-de-orcamento/[profissao]/
+
+**Resposta a “quanto devo cobrar?”**
+> Depende da sua região e do seu custo, mas essa página tem a faixa de referência de
+> mercado dos serviços de [profissão] e monta o orçamento já calculando sua margem:
+> [link da profissão]
+
+Regra que vale mais que qualquer modelo: **poste a resposta, não o produto.** Divulgação
+direta em grupo de profissional é ignorada ou apagada; resposta útil com link fica.
+
+## Métricas que importam
+
+Sem analytics instalado — de propósito, para não quebrar a CSP nem rastrear ninguém. O que
+observar no Search Console: impressões por página de profissão (mostra qual cauda pega),
+CTR (mostra se o título vende) e posição média. As páginas que subirem primeiro indicam
+onde vale escrever mais.
+
+## Quando começar a cobrar
+
+O limite de 5 orçamentos por mês já está no app, mas hoje é fricção, não barreira — dá
+para contornar limpando o navegador (risco R-2 na auditoria). Cobrança de verdade exige um
+backend mínimo que valide a assinatura. Faz sentido construir isso **depois** de ver
+recorrência: se um grupo de usuários bate no limite todo mês, existe produto pago.
