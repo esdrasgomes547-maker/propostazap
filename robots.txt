@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://esdrasgomes547-maker.github.io/propostazap/sitemap.xml
