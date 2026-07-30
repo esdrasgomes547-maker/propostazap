@@ -123,3 +123,30 @@ describe('entrada hostil', () => {
     expect(voltou?.proposta.itens).toHaveLength(200);
   });
 });
+
+describe('poluição de protótipo', () => {
+  it('não deixa __proto__ do payload contaminar Object.prototype', async () => {
+    const bytes = new TextEncoder().encode(
+      '{"v":1,"empresa":{"__proto__":{"invadido":true}},"proposta":{"numero":1,"__proto__":{"invadido":true}}}',
+    );
+    const origem = new ReadableStream<BufferSource>({
+      start(c) {
+        c.enqueue(bytes as BufferSource);
+        c.close();
+      },
+    });
+    const leitor = origem.pipeThrough(new CompressionStream('deflate-raw')).getReader();
+    let bruto = '';
+    for (;;) {
+      const { done, value } = await leitor.read();
+      if (done) break;
+      for (const b of value) bruto += String.fromCharCode(b);
+    }
+    const token = `c${btoa(bruto).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')}`;
+
+    const voltou = await decodificarProposta(token);
+    expect(voltou).not.toBeNull();
+    expect(({} as Record<string, unknown>).invadido).toBeUndefined();
+    expect(Object.prototype).not.toHaveProperty('invadido');
+  });
+});

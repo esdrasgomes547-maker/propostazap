@@ -81,6 +81,30 @@ describe('fluxo do prestador', () => {
     expect(screen.getByRole('button', { name: /criar orçamento/i })).toBeDisabled();
   });
 
+  it('não mutila o texto enquanto o usuário digita', async () => {
+    const usuario = userEvent.setup();
+    render(<App />);
+
+    await usuario.click(screen.getByRole('button', { name: /criar orçamento/i }));
+    await screen.findByLabelText(/título do orçamento/i);
+
+    // Espaço no fim e e-mail incompleto são estados normais de quem digita.
+    // Sanear cedo demais engolia a tecla e zerava o campo a cada caractere.
+    const nome = screen.getByLabelText(/^nome$/i);
+    await usuario.type(nome, 'Maria Souza ');
+    expect(nome).toHaveValue('Maria Souza ');
+
+    const email = screen.getByLabelText(/e-mail/i);
+    await usuario.type(email, 'maria@');
+    expect(email).toHaveValue('maria@');
+    await usuario.type(email, 'exemplo.com');
+    expect(email).toHaveValue('maria@exemplo.com');
+
+    const observacoes = screen.getByLabelText(/observações/i);
+    await usuario.type(observacoes, 'Linha 1{enter}Linha 2');
+    expect(observacoes).toHaveValue('Linha 1\nLinha 2');
+  });
+
   it('persiste o orçamento entre montagens do app', async () => {
     const usuario = userEvent.setup();
     const { unmount } = render(<App />);

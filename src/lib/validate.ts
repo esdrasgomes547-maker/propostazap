@@ -56,9 +56,13 @@ export function slugSeguro(valor: unknown): string {
   return /^[a-z0-9-]{1,60}$/.test(valor) ? valor : '';
 }
 
+/**
+ * E-mail é só texto: nunca vira href nem é usado como identidade. Validar o
+ * formato aqui zeraria o campo a cada tecla, já que "a", "a@" e "a@b" são
+ * estados intermediários legítimos de quem está digitando.
+ */
 function emailSeguro(valor: unknown): string {
-  const limpo = texto(valor, LIMITES.email);
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(limpo) ? limpo : '';
+  return texto(valor, LIMITES.email);
 }
 
 export function validarCliente(bruto: unknown): Cliente {

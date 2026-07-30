@@ -45,6 +45,9 @@ function reais(centavos) {
   return `R$ ${inteiro},${String(centavos % 100).padStart(2, '0')}`;
 }
 
+const CSP =
+  "default-src 'self'; base-uri 'none'; object-src 'none'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; font-src 'self'; form-action 'none'";
+
 const CSS = `
 :root{--marca:#059669;--marca-escura:#047857;--tinta:#0f172a;--suave:#475569;--borda:#e2e8f0;--fundo:#f8fafc}
 *{box-sizing:border-box}
@@ -96,6 +99,8 @@ function pagina({ titulo, descricao, caminho, corpo, jsonLd }) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="${CSP}">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <title>${esc(titulo)}</title>
 <meta name="description" content="${esc(descricao)}">
 <link rel="canonical" href="${esc(canonico)}">

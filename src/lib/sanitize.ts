@@ -8,9 +8,20 @@
 
 export const COR_PADRAO = '#0f9d58';
 
-/** Controle C0/C1, espaços de largura zero, separadores de linha e overrides bidi. */
+/**
+ * Controle C0/C1, espaços de largura zero, separadores de linha e overrides
+ * bidi — tudo que é invisível e pode disfarçar conteúdo.
+ *
+ * O que NÃO entra aqui: aparar e colapsar espaço em branco. Isso é
+ * normalização, não segurança, e roda no mesmo caminho em que o usuário está
+ * digitando: aparar o espaço final apaga a tecla que ele acabou de apertar.
+ */
 const INVISIVEIS =
   /[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u2028\u2029\u202a-\u202e\u2060-\u2064\u2066-\u2069\ufeff]/g;
+
+/** Igual ao anterior, mas preservando \n (U+000A). */
+const INVISIVEIS_MULTILINHA =
+  /[\u0000-\u0009\u000b-\u001f\u007f-\u009f\u200b-\u200f\u2028\u2029\u202a-\u202e\u2060-\u2064\u2066-\u2069\ufeff]/g;
 
 const ESQUEMAS_PERMITIDOS = new Set(['http:', 'https:', 'mailto:', 'tel:']);
 
@@ -21,10 +32,10 @@ const MAX_LOGO_CARACTERES = 1_400_000;
 
 const HEX_6 = /^#[0-9a-fA-F]{6}$/;
 
-/** Texto de linha única: sem invisíveis, espaços colapsados, recortado. */
+/** Texto de linha única: sem invisíveis (inclusive quebras de linha), recortado. */
 export function texto(valor: unknown, maximo: number): string {
   if (typeof valor !== 'string') return '';
-  return valor.replace(INVISIVEIS, '').replace(/\s+/g, ' ').trim().slice(0, maximo);
+  return valor.replace(INVISIVEIS, '').slice(0, maximo);
 }
 
 /** Igual a `texto`, mas preserva quebras de linha (observações, condições). */
@@ -32,10 +43,7 @@ export function textoMultilinha(valor: unknown, maximo: number): string {
   if (typeof valor !== 'string') return '';
   return valor
     .replace(/\r\n?/g, '\n')
-    .replace(INVISIVEIS, '')
-    .replace(/[^\S\n]+/g, ' ')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim()
+    .replace(INVISIVEIS_MULTILINHA, '')
     .slice(0, maximo);
 }
 
