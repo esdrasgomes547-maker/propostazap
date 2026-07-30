@@ -13,8 +13,16 @@ import { fileURLToPath } from 'node:url';
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(RAIZ, 'dist');
 
+// SITE é só a origem (sem caminho); BASE é o prefixo de URL onde o site é servido.
+// GitHub Pages de projeto serve em /<repo>/, então os dois se somam na URL —
+// mas em disco os arquivos vão na raiz de dist/, sem o prefixo.
 const SITE = process.env.SITE_URL?.replace(/\/$/, '') ?? 'https://propostazap.pages.dev';
 const BASE = process.env.BASE_PATH ?? '/';
+
+/** Converte um caminho de URL no caminho de arquivo correspondente dentro de dist/. */
+function semBase(caminho) {
+  return caminho.startsWith(BASE) ? `/${caminho.slice(BASE.length)}` : caminho;
+}
 
 /** Carrega o catálogo TypeScript compilando-o para um módulo temporário. */
 async function carregarProfissoes() {
@@ -331,7 +339,7 @@ function paginaInicial(profissoes) {
 }
 
 async function escrever(caminho, html) {
-  const destino = join(DIST, caminho.replace(/^\//, ''), 'index.html');
+  const destino = join(DIST, semBase(caminho).replace(/^\//, ''), 'index.html');
   await mkdir(dirname(destino), { recursive: true });
   await writeFile(destino, html, 'utf8');
 }
@@ -358,7 +366,7 @@ ${urls.map((u) => `  <url><loc>${SITE}${u}</loc></url>`).join('\n')}
 
   await writeFile(
     join(DIST, 'robots.txt'),
-    `User-agent: *\nAllow: /\n\nSitemap: ${SITE}/sitemap.xml\n`,
+    `User-agent: *\nAllow: /\n\nSitemap: ${SITE}${BASE}sitemap.xml\n`,
     'utf8',
   );
 
