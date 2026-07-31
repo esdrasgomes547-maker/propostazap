@@ -2,3 +2,6 @@ node_modules
 dist
 *.local
 .DS_Store
+chaves/
+.env
+.env.local

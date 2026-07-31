@@ -135,7 +135,7 @@ ${corpo}
   <div class="wrap">
     <p><strong>PropostaZap</strong> — orçamentos profissionais em 2 minutos, direto do celular.</p>
     <p>Os valores citados são faixas de referência de mercado para ajudar na montagem do seu orçamento. Não são cotação nem tabela oficial: quem define o preço do seu serviço é você.</p>
-    <p><a href="${BASE}modelos/">Todos os modelos de orçamento</a> · <a href="${BASE}app/">Abrir o app</a></p>
+    <p><a href="${BASE}modelos/">Todos os modelos</a> · <a href="${BASE}precos/">Preços</a> · <a href="${BASE}app/">Abrir o app</a></p>
   </div>
 </footer>
 </body>
@@ -271,6 +271,75 @@ function paginaModelos(profissoes) {
   };
 }
 
+
+function paginaPrecos() {
+  const caminho = `${BASE}precos/`;
+  const corpo = `
+<div class="wrap">
+  <nav class="migalha"><a href="${BASE}">Início</a> › Preços</nav>
+  <div class="heroi" style="padding:34px 0 24px">
+    <h1>Grátis para começar. Barato para crescer.</h1>
+    <p>Sem cartão, sem cadastro, sem fidelidade. O plano gratuito não expira.</p>
+  </div>
+
+  <div class="grade">
+    <div class="cartao">
+      <h3>Gratuito</h3>
+      <p style="font-size:26px;font-weight:700;color:var(--tinta);margin:6px 0">R$ 0</p>
+      <p>5 orçamentos por mês, para sempre. Todos os modelos de profissão, PDF, link e envio por WhatsApp inclusos.</p>
+    </div>
+    <div class="cartao" style="border-color:var(--marca)">
+      <h3>Pro anual</h3>
+      <p style="font-size:26px;font-weight:700;color:var(--marca-escura);margin:6px 0">R$ 197<span style="font-size:14px;font-weight:400;color:var(--suave)">/ano</span></p>
+      <p>Orçamentos ilimitados. Menos de R$ 17 por mês — costuma se pagar no primeiro serviço fechado.</p>
+    </div>
+    <div class="cartao">
+      <h3>Pro mensal</h3>
+      <p style="font-size:26px;font-weight:700;color:var(--tinta);margin:6px 0">R$ 29<span style="font-size:14px;font-weight:400;color:var(--suave)">/mês</span></p>
+      <p>Orçamentos ilimitados, renova quando você quiser.</p>
+    </div>
+  </div>
+
+  <section>
+    <h2>Perguntas sobre o pagamento</h2>
+    <div class="faq"><h3>Como eu pago?</h3><p>Por PIX. Você copia o código, paga no app do seu banco e manda o comprovante. Em seguida recebe um código de ativação para colar no app.</p></div>
+    <div class="faq"><h3>Preciso de cartão de crédito?</h3><p>Não. Não existe cobrança automática nem cartão cadastrado: você paga quando quiser renovar.</p></div>
+    <div class="faq"><h3>O que acontece quando vence?</h3><p>Você volta ao plano gratuito, com 5 orçamentos por mês. Nenhum orçamento é apagado — continua tudo no seu aparelho.</p></div>
+    <div class="faq"><h3>Funciona em mais de um celular?</h3><p>Sim. O mesmo código de ativação pode ser colado nos seus aparelhos. Lembre que os orçamentos ficam gravados em cada aparelho separadamente.</p></div>
+    <div class="faq"><h3>Vale a pena o anual?</h3><p>Sai 43% mais barato que pagar mês a mês. Se você fecha pelo menos um serviço por ano graças a um orçamento bem apresentado, já pagou.</p></div>
+  </section>
+
+  <div class="chamada">
+    <h2>Comece pelo gratuito</h2>
+    <p>Sem cadastro. Se gostar, o Pro está a um PIX de distância.</p>
+    <a class="btn" href="${BASE}app/">Criar orçamento grátis</a>
+  </div>
+</div>`;
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: 'PropostaZap Pro',
+    description: 'Orçamentos ilimitados para prestadores de serviço.',
+    offers: [
+      { '@type': 'Offer', name: 'Pro anual', price: '197.00', priceCurrency: 'BRL' },
+      { '@type': 'Offer', name: 'Pro mensal', price: '29.00', priceCurrency: 'BRL' },
+    ],
+  };
+
+  return {
+    caminho,
+    html: pagina({
+      titulo: 'Preços — PropostaZap',
+      descricao:
+        'Plano gratuito com 5 orçamentos por mês, para sempre. Pro ilimitado por R$ 197 ao ano ou R$ 29 ao mês, pago por PIX, sem cartão e sem fidelidade.',
+      caminho,
+      corpo,
+      jsonLd,
+    }),
+  };
+}
+
 function paginaInicial(profissoes) {
   const destaques = profissoes.slice(0, 12);
   const corpo = `
@@ -281,6 +350,7 @@ function paginaInicial(profissoes) {
     <div class="acoes">
       <a class="btn" href="${BASE}app/">Criar meu orçamento grátis</a>
       <a class="btn vazio" href="${BASE}modelos/">Ver modelos por profissão</a>
+      <a class="btn vazio" href="${BASE}precos/">Preços</a>
     </div>
     <p class="selo">Sem cadastro · sem instalar nada · seus dados ficam no seu aparelho</p>
   </div>
@@ -352,7 +422,7 @@ async function principal() {
   await mkdir(join(DIST, 'app'), { recursive: true });
   await writeFile(join(DIST, 'app', 'index.html'), spa, 'utf8');
 
-  const paginas = [paginaInicial(PROFISSOES), paginaModelos(PROFISSOES)];
+  const paginas = [paginaInicial(PROFISSOES), paginaModelos(PROFISSOES), paginaPrecos()];
   for (const p of PROFISSOES) paginas.push(paginaProfissao(p, duvidasComuns(p)));
 
   for (const { caminho, html } of paginas) await escrever(caminho, html);

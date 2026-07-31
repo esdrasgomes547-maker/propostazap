@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { irPara, useRota } from './lib/router';
 import { useApp } from './lib/useApp';
+import { Assinar } from './ui/Assinar';
 import { Config } from './ui/Config';
 import { Editor } from './ui/Editor';
 import { Painel } from './ui/Painel';
@@ -60,6 +61,7 @@ export default function App() {
         {rota.nome === 'nova' && <p className="py-16 text-center text-sm text-slate-500">Criando…</p>}
         {rota.nome === 'editar' && <Editor app={app} id={rota.id} />}
         {rota.nome === 'config' && <Config app={app} />}
+        {rota.nome === 'assinar' && <Assinar app={app} />}
         {rota.nome === 'publico' && <Publico token={rota.token} />}
       </main>
     </div>

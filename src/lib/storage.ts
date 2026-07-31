@@ -4,7 +4,7 @@ import type { Empresa, Proposta } from './types';
 
 const CHAVE_EMPRESA = 'pz.empresa.v1';
 const CHAVE_PROPOSTAS = 'pz.propostas.v1';
-const CHAVE_PLANO = 'pz.plano.v1';
+const CHAVE_LICENCA = 'pz.licenca.v1';
 
 /** Teto de propostas guardadas — o localStorage tem ~5 MB por origem. */
 export const MAX_PROPOSTAS_ARMAZENADAS = 500;
@@ -76,12 +76,18 @@ export function salvarPropostas(propostas: Proposta[]): boolean {
   return gravar(CHAVE_PROPOSTAS, seguras);
 }
 
-export function carregarPlano(): Plano {
-  return ler(CHAVE_PLANO) === 'pro' ? 'pro' : 'gratis';
+/**
+ * Guarda o código de ativação, não o plano. O plano é resultado de verificar a
+ * assinatura desse código — gravar "pro" direto seria um interruptor que
+ * qualquer um liga pelo DevTools.
+ */
+export function carregarLicencaToken(): string {
+  const bruto = ler(CHAVE_LICENCA);
+  return typeof bruto === 'string' && bruto.length <= 4096 ? bruto : '';
 }
 
-export function salvarPlano(plano: Plano): boolean {
-  return gravar(CHAVE_PLANO, plano === 'pro' ? 'pro' : 'gratis');
+export function salvarLicencaToken(token: string): boolean {
+  return gravar(CHAVE_LICENCA, typeof token === 'string' ? token.slice(0, 4096) : '');
 }
 
 /** Próximo número sequencial, sempre acima do maior já usado. */

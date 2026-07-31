@@ -5,6 +5,7 @@ export type Rota =
   | { nome: 'nova'; profissao: string }
   | { nome: 'editar'; id: string }
   | { nome: 'config' }
+  | { nome: 'assinar' }
   | { nome: 'publico'; token: string };
 
 /** IDs internos são UUID; qualquer outra coisa na URL não vira consulta. */
@@ -24,6 +25,8 @@ export function lerRota(hash: string): Rota {
       return ID_VALIDO.test(argumento) ? { nome: 'editar', id: argumento } : { nome: 'painel' };
     case 'config':
       return { nome: 'config' };
+    case 'assinar':
+      return { nome: 'assinar' };
     case 'ver':
       return TOKEN_VALIDO.test(argumento)
         ? { nome: 'publico', token: argumento }

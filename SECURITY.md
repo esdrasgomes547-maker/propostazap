@@ -138,6 +138,20 @@ Nenhum recurso de terceiros é carregado em tempo de execução — sem CDN, sem
 sem analytics, sem pixel de rastreamento. A CSP `default-src 'self'` torna isso obrigatório,
 não apenas convencional.
 
+**Licenciamento.** A licença Pro é um par corpo/assinatura em base64url, assinado com
+ECDSA P-256 (SHA-256). O app importa somente a chave pública e chama
+`crypto.subtle.verify` — verificar não permite emitir. O plano nunca é lido do
+`localStorage` como um booleano: o que fica gravado é o código, e ele só vira "Pro" depois
+que a assinatura confere. Um valor plantado à mão no `localStorage` não libera nada.
+Testes: `src/lib/license.test.ts` (13 casos, incluindo corpo trocado, assinatura trocada e
+licença assinada por outra chave) e `src/ui/Assinar.test.tsx`.
+
+**Cobrança por PIX.** O código "copia e cola" é gerado localmente conforme a especificação
+do BR Code do Banco Central — montagem de string mais CRC-16/CCITT-FALSE. Não há gateway,
+chamada de rede nem chave de API envolvida, e portanto nenhuma superfície nova de ataque
+nem custo por transação. Testes: `src/lib/pix.test.ts`, que decodifica o TLV gerado com um
+parser independente em vez de comparar com a própria saída.
+
 **Upload de logo.** O arquivo escolhido nunca é usado diretamente. É redesenhado em
 `<canvas>` e reexportado como PNG, o que descarta metadados (EXIF, geolocalização da foto)
 e qualquer payload anexado ao arquivo original. Tipo restrito a PNG/JPEG/WEBP, tamanho a
@@ -153,10 +167,17 @@ como revogar. É o modelo de um link do Google Drive “qualquer pessoa com o li
 avisado na interface antes de o usuário copiar. Restringir acesso exigiria servidor e
 cadastro.
 
-**R-2 · A cota do plano gratuito é contornável.** O limite de 5 orçamentos por mês vive no
-`localStorage` e cai se o usuário limpar o navegador. Isso é um portão comercial, não de
-segurança: cobrança de verdade exige backend que valide a assinatura. Enquanto não houver,
-o limite funciona como fricção, não como barreira.
+**R-2 · A licença é verificada no cliente.** Desde a introdução do plano Pro, o acesso
+depende de uma licença assinada com ECDSA P-256: o app carrega só a chave pública, então
+**não é possível forjar nem editar uma licença** — mudar um caractere invalida a
+assinatura, e emitir exige a chave privada, que fica fora do repositório. O que continua
+possível, e não tem solução sem servidor: repassar a mesma licença para outra pessoa, e
+alterar o JavaScript no próprio navegador. Mitigações já aplicadas: a licença tem prazo,
+carrega o nome do comprador (repasse fica visível) e o `id` da emissão permite rastrear
+qual pagamento gerou qual licença, pelo registro em `chaves/licencas-emitidas.csv`.
+
+Consequência operacional: a chave privada **é** o negócio. Perdê-la impede novas emissões;
+vazá-la permite que qualquer um emita licenças. Backup offline é obrigatório.
 
 **R-3 · Dados pessoais viajam dentro da URL.** O orçamento carrega nome, telefone, CPF e
 endereço do cliente. Ponto a favor: o conteúdo fica no **fragmento** da URL, que os
@@ -178,7 +199,7 @@ ou seja, exigiria servidor.
 | Verificação | Resultado |
 |---|---|
 | `bunx tsc -b --noEmit` | sem erros |
-| `bunx vitest run` | 99 testes, 8 arquivos, todos passando |
+| `bunx vitest run` | 130 testes, 11 arquivos, todos passando |
 | `npm audit` (produção e completo) | 0 vulnerabilidades |
 | Varredura de `innerHTML`/`eval`/`Function`/`document.write` | nenhuma ocorrência |
 | Revisão manual de todo `href`/`src`/`style` dinâmico | 2 ocorrências, ambas validadas |
@@ -187,8 +208,8 @@ ou seja, exigiria servidor.
 
 ## 6. Próximos passos recomendados
 
-1. Antes de cobrar de verdade: backend mínimo para validar assinatura (resolve R-2) e
-   guardar os orçamentos (resolve R-4).
+1. Backend mínimo para guardar os orçamentos fora do aparelho (resolve R-4) e, se um dia
+   o repasse de licença virar problema de verdade, para vincular licença a conta.
 2. Assinar o token do link com HMAC no servidor, se a proposta virar documento
    vinculante (resolve R-5).
 3. Considerar `Subresource Integrity` caso algum recurso passe a ser servido de terceiro —

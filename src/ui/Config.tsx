@@ -1,7 +1,10 @@
 import { useRef, useState } from 'react';
+import { formatarVencimento } from '../lib/license';
+import { irPara } from '../lib/router';
 import { COR_PADRAO } from '../lib/sanitize';
 import { exportarBackup, importarBackup, LIMITE_MENSAL_GRATIS } from '../lib/storage';
 import { PROFISSOES } from '../lib/professions';
+import { COBRANCA_CONFIGURADA } from '../lib/plano';
 import type { App } from '../lib/useApp';
 import { Aviso, Botao, Campo, Cartao, Titulo } from './base';
 
@@ -201,23 +204,41 @@ export function Config({ app }: { app: App }) {
 
       <Cartao>
         <Titulo>Plano</Titulo>
-        {app.plano === 'pro' ? (
+        {app.licenca ? (
           <div className="space-y-3">
-            <Aviso>Plano Pro ativo — orçamentos ilimitados.</Aviso>
-            <Botao aoClicar={() => app.definirPlano('gratis')}>Voltar ao plano gratuito</Botao>
+            <Aviso>
+              Pro ativo — licença de <strong>{app.licenca.nome || 'sem nome'}</strong>,{' '}
+              {formatarVencimento(app.licenca)}. Orçamentos ilimitados.
+            </Aviso>
+            <Botao
+              variante="perigo"
+              aoClicar={() => {
+                if (globalThis.confirm('Remover a licença deste aparelho? Você volta ao plano gratuito.')) {
+                  app.removerLicenca();
+                }
+              }}
+            >
+              Remover licença deste aparelho
+            </Botao>
           </div>
         ) : (
           <div className="space-y-3">
+            {app.licencaVencida && (
+              <Aviso tom="alerta">Sua licença Pro venceu. Renove para tirar o limite de novo.</Aviso>
+            )}
             <p className="text-sm text-slate-600">
               No plano gratuito você cria {LIMITE_MENSAL_GRATIS} orçamentos por mês. Usados neste mês:{' '}
               <strong className="tabular-nums">{app.cota.usadas}</strong>.
             </p>
-            <Aviso tom="alerta">
-              O Pro ainda não tem cobrança ligada nesta versão. Enquanto isso, você pode liberar o uso
-              ilimitado manualmente aqui.
-            </Aviso>
-            <Botao variante="primario" aoClicar={() => app.definirPlano('pro')}>
-              Liberar uso ilimitado
+            <Botao
+              variante={COBRANCA_CONFIGURADA ? 'primario' : 'secundario'}
+              aoClicar={() => irPara('/assinar')}
+            >
+              {COBRANCA_CONFIGURADA
+                ? app.licencaVencida
+                  ? 'Renovar o Pro'
+                  : 'Assinar o Pro'
+                : 'Tenho um código de ativação'}
             </Botao>
           </div>
         )}

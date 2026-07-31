@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { novoId, propostaVazia } from './factory';
 import { acharProfissao } from './professions';
+import { verificarLicenca, type Licenca, type ResultadoLicenca } from './license';
 import {
   carregarEmpresa,
-  carregarPlano,
+  carregarLicencaToken,
   carregarPropostas,
   estadoCota,
   proximoNumero,
   salvarEmpresa,
-  salvarPlano,
+  salvarLicencaToken,
   salvarPropostas,
   type EstadoCota,
   type Plano,
@@ -20,6 +21,10 @@ export interface App {
   empresa: Empresa;
   propostas: Proposta[];
   plano: Plano;
+  /** Dados da licença ativa, quando há uma válida. */
+  licenca: Licenca | null;
+  /** Verdadeiro quando existe licença guardada mas o prazo já passou. */
+  licencaVencida: boolean;
   cota: EstadoCota;
   falhaAoSalvar: boolean;
   atualizarEmpresa: (e: Empresa) => void;
@@ -27,7 +32,8 @@ export interface App {
   atualizarProposta: (p: Proposta) => void;
   removerProposta: (id: string) => void;
   duplicarProposta: (id: string) => Proposta | null;
-  definirPlano: (p: Plano) => void;
+  ativarLicenca: (token: string) => Promise<ResultadoLicenca>;
+  removerLicenca: () => void;
   substituirTudo: (e: Empresa, p: Proposta[]) => void;
 }
 
@@ -44,12 +50,35 @@ export interface App {
 export function useApp(): App {
   const [empresa, setEmpresa] = useState<Empresa>(carregarEmpresa);
   const [propostas, setPropostas] = useState<Proposta[]>(carregarPropostas);
-  const [plano, setPlano] = useState<Plano>(carregarPlano);
+  const [licenca, setLicenca] = useState<Licenca | null>(null);
+  const [licencaVencida, setLicencaVencida] = useState(false);
   const [falhaAoSalvar, setFalhaAoSalvar] = useState(false);
+
+  const plano: Plano = licenca ? 'pro' : 'gratis';
 
   const empresaRef = useRef(empresa);
   const propostasRef = useRef(propostas);
-  const planoRef = useRef(plano);
+  const planoRef = useRef<Plano>('gratis');
+  planoRef.current = plano;
+
+  // A licença guardada só vira plano depois de a assinatura ser verificada.
+  // Enquanto isso o usuário fica no gratuito: nunca liberamos com base na
+  // simples presença de um valor no localStorage.
+  useEffect(() => {
+    const guardada = carregarLicencaToken();
+    if (!guardada) return;
+
+    let cancelado = false;
+    verificarLicenca(guardada).then((r) => {
+      if (cancelado) return;
+      setLicenca(r.situacao === 'valida' ? r.licenca : null);
+      setLicencaVencida(r.situacao === 'vencida');
+    });
+
+    return () => {
+      cancelado = true;
+    };
+  }, []);
 
   const gravarEmpresa = useCallback((nova: Empresa) => {
     // Sanear antes de exibir mantém tela e armazenamento contando a mesma história.
@@ -69,10 +98,8 @@ export function useApp(): App {
   const recarregar = useCallback(() => {
     empresaRef.current = carregarEmpresa();
     propostasRef.current = carregarPropostas();
-    planoRef.current = carregarPlano();
     setEmpresa(empresaRef.current);
     setPropostas(propostasRef.current);
-    setPlano(planoRef.current);
   }, []);
 
   // Outra aba do mesmo navegador pode ter alterado os dados.
@@ -143,11 +170,21 @@ export function useApp(): App {
     [gravarPropostas],
   );
 
-  const definirPlano = useCallback((novo: Plano) => {
-    const seguro: Plano = novo === 'pro' ? 'pro' : 'gratis';
-    planoRef.current = seguro;
-    setPlano(seguro);
-    salvarPlano(seguro);
+  const ativarLicenca = useCallback(async (token: string): Promise<ResultadoLicenca> => {
+    const resultado = await verificarLicenca(token);
+
+    if (resultado.situacao === 'valida') {
+      salvarLicencaToken(token.trim());
+      setLicenca(resultado.licenca);
+      setLicencaVencida(false);
+    }
+    return resultado;
+  }, []);
+
+  const removerLicenca = useCallback(() => {
+    salvarLicencaToken('');
+    setLicenca(null);
+    setLicencaVencida(false);
   }, []);
 
   const substituirTudo = useCallback(
@@ -162,6 +199,8 @@ export function useApp(): App {
     empresa,
     propostas,
     plano,
+    licenca,
+    licencaVencida,
     cota,
     falhaAoSalvar,
     atualizarEmpresa: gravarEmpresa,
@@ -169,7 +208,8 @@ export function useApp(): App {
     atualizarProposta,
     removerProposta,
     duplicarProposta,
-    definirPlano,
+    ativarLicenca,
+    removerLicenca,
     substituirTudo,
   };
 }

@@ -21,9 +21,9 @@ trafegando por servidor nosso — e nenhuma chave de API exposta, porque não h�
 ```bash
 bun install
 bun run dev        # desenvolvimento
-bun run test       # 99 testes
+bun run test       # 130 testes
 bun run typecheck  # checagem de tipos
-bun run build      # dist/ com o app + 41 páginas estáticas
+bun run build      # dist/ com o app + 42 páginas estáticas
 ```
 
 ## Estrutura
@@ -58,7 +58,30 @@ vive em `/app/`.
 
 Auditoria completa, achados e riscos residuais em [`SECURITY.md`](./SECURITY.md).
 
+## Cobrança
+
+Plano Pro pago por PIX, sem gateway e sem taxa por transação:
+
+1. O cliente copia o código PIX na tela de assinatura e paga no app do banco.
+2. Manda o comprovante pelo WhatsApp.
+3. Você confirma o PIX na conta e emite a licença:
+
+```bash
+node scripts/emitir-licenca.mjs --nome "Eletrica Silva" --meses 12 --id pix-4417
+```
+
+O comando imprime a mensagem pronta para enviar e registra a emissão em
+`chaves/licencas-emitidas.csv`. O cliente cola o código no app e o Pro libera na hora.
+
+A licença é assinada com ECDSA P-256. O app carrega apenas a chave pública, então não há
+como forjar. **A chave privada em `chaves/licenca-privada.json` é o negócio**: está fora do
+git, faça backup offline. Perdê-la impede novas emissões.
+
+Antes do primeiro build com cobrança, copie `.env.example` para `.env` e preencha
+`VITE_PIX_CHAVE` e `VITE_WHATSAPP_SUPORTE`. Sem isso a tela avisa que a cobrança não está
+configurada, em vez de mostrar um código que não cai em conta nenhuma.
+
 ## Situação
 
-MVP funcional. O plano Pro ainda não tem cobrança ligada — isso exige backend para validar
-assinatura, e está descrito como risco residual R-2 na auditoria.
+MVP funcional e no ar, com cobrança por PIX operando de forma manual (você confirma o
+pagamento e emite a licença). Automatizar exigiria gateway com taxa ou backend próprio.
