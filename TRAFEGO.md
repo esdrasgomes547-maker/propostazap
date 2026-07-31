@@ -23,7 +23,7 @@ uma impressão de marca para um cliente final.
 | 39 páginas de profissão com conteúdo próprio, tabela de preços e FAQ | no ar |
 | Cobrança por PIX ligada no app, com licença assinada | no ar (falta a chave PIX) |
 | Índice de modelos agrupado por categoria | no ar |
-| `sitemap.xml` com 42 URLs | no ar |
+| `sitemap.xml` com 43 URLs | no ar |
 | `robots.txt` | no ar |
 | URL canônica em toda página | no ar |
 | Dados estruturados `FAQPage` e `BreadcrumbList` | no ar |
