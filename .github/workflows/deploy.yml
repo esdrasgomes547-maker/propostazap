@@ -11,7 +11,7 @@ name: Publicar site
 
 on:
   push:
-    branches: [master, worktree-propostazap-mvp]
+    branches: [master]
   workflow_dispatch:
 
 # Um deploy por vez, sem cancelar o que está no meio de uma publicação.
