@@ -21,13 +21,15 @@ uma impressão de marca para um cliente final.
 | Item | Situação |
 |---|---|
 | 39 páginas de profissão com conteúdo próprio, tabela de preços e FAQ | no ar |
+| Cobrança por PIX ligada no app, com licença assinada | no ar (falta a chave PIX) |
 | Índice de modelos agrupado por categoria | no ar |
 | `sitemap.xml` com 42 URLs | no ar |
 | `robots.txt` | no ar |
 | URL canônica em toda página | no ar |
 | Dados estruturados `FAQPage` e `BreadcrumbList` | no ar |
 | Open Graph e Twitter Card (prévia ao compartilhar) | no ar |
-| Submissão ao IndexNow — Bing, Yandex e parceiros | **enviado: 42 URLs, aceito** |
+| Página de preços indexável, com `schema.org/Product` | no ar |
+| Submissão ao IndexNow — Bing, Yandex e parceiros | **enviado: 43 URLs, aceito** |
 | Loop de marca: link enviado ao cliente exibe a assinatura | no ar |
 
 Reenviar a qualquer momento, depois de publicar páginas novas:
@@ -68,6 +70,11 @@ Depoimento de prestador com nome e profissão converte mais que qualquer texto d
 `src/lib/professions.ts`, rode `bun run build` e `bun run indexnow`. Custo marginal por
 página: zero.
 
+## Material pronto para publicar
+
+Calendário de 4 semanas, textos por canal, roteiros de vídeo curto e respostas para as
+objeções mais comuns: [`CAMPANHAS.md`](./CAMPANHAS.md).
+
 ## Modelos de postagem prontos
 
 **Grupo de WhatsApp de prestadores**
@@ -96,9 +103,12 @@ observar no Search Console: impressões por página de profissão (mostra qual c
 CTR (mostra se o título vende) e posição média. As páginas que subirem primeiro indicam
 onde vale escrever mais.
 
-## Quando começar a cobrar
+## Cobrança
 
-O limite de 5 orçamentos por mês já está no app, mas hoje é fricção, não barreira — dá
-para contornar limpando o navegador (risco R-2 na auditoria). Cobrança de verdade exige um
-backend mínimo que valide a assinatura. Faz sentido construir isso **depois** de ver
-recorrência: se um grupo de usuários bate no limite todo mês, existe produto pago.
+Já está ligada: PIX direto, sem gateway e sem taxa por transação, com licença assinada
+criptograficamente (ver `README.md` e `SECURITY.md`). Falta apenas preencher
+`VITE_PIX_CHAVE` e `VITE_WHATSAPP_SUPORTE` no `.env` e rebuildar — enquanto isso o app não
+oferece compra, só ativação de código.
+
+Ordem que funciona: **não divulgue o Pro no começo**. Quem compra é quem bate no limite de
+5 por mês. Divulgar preço antes de existir uso é queimar a única chance de conversão.
