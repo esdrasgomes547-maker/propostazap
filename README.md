@@ -21,7 +21,7 @@ trafegando por servidor nosso — e nenhuma chave de API exposta, porque não h�
 ```bash
 bun install
 bun run dev        # desenvolvimento
-bun run test       # 130 testes
+bun run test       # 142 testes
 bun run typecheck  # checagem de tipos
 bun run build      # dist/ com o app + 42 páginas estáticas
 ```
@@ -53,6 +53,28 @@ Regras que valem a pena conhecer antes de mexer:
 
 Uma SPA com rota em hash não é indexável; por isso o site de conteúdo é estático e o app
 vive em `/app/`.
+
+## Offline
+
+O app funciona sem internet. O service worker é gerado no build com a lista de arquivos
+daquele build (os assets têm hash no nome, então a lista não pode ser escrita à mão).
+
+Estratégia, e o porquê de cada escolha:
+
+- **HTML: rede primeiro.** Deploy novo sempre aparece. Cache primeiro congelaria a versão
+  antiga no aparelho do usuário, para sempre.
+- **Assets com hash: cache primeiro.** O nome muda quando o conteúdo muda, então servir do
+  cache nunca entrega conteúdo velho.
+- **Outra origem ou fora do escopo:** nem passa pelo service worker.
+
+O código dele mora em `scripts/service-worker-fonte.mjs` como função pura, não embutido no
+gerador. É o que permite testá-lo (`src/lib/service-worker.test.ts` executa install,
+activate e fetch num escopo falso) antes de chegar em alguém — service worker quebrado é
+grudento: fica instalado e continua servindo o que aprendeu.
+
+Os ícones PNG são gerados no build por `scripts/gerar-icones.mjs`, escrevendo o PNG na mão
+(zlib + CRC32). Dois arquivos que nunca mudam não justificam somar uma dependência de
+imagem à cadeia de suprimentos.
 
 ## Deploy
 
