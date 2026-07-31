@@ -30,6 +30,10 @@ uma impressão de marca para um cliente final.
 | Open Graph e Twitter Card (prévia ao compartilhar) | no ar |
 | Página de preços indexável, com `schema.org/Product` | no ar |
 | Submissão ao IndexNow — Bing, Yandex e parceiros | **enviado: 43 URLs, aceito** |
+| Google Search Console — propriedade verificada (arquivo HTML) | **feito em 31/07/2026** |
+| Sitemap enviado ao Google | enviado; primeira leitura ainda na fila |
+| Indexação prioritária pedida para 7 URLs | **feito** |
+| Home indexada no Google | **confirmado** |
 | Loop de marca: link enviado ao cliente exibe a assinatura | no ar |
 
 Reenviar a qualquer momento, depois de publicar páginas novas:
@@ -38,17 +42,31 @@ Reenviar a qualquer momento, depois de publicar páginas novas:
 bun run indexnow
 ```
 
+## Estado da indexação no Google
+
+Propriedade verificada em 31/07/2026 pelo método de arquivo HTML
+(`public/google70877a97f710bc89.html` — **não apague**, remover tira a verificação).
+
+Indexação prioritária já solicitada para: home, `/precos/`, `/modelos/`, e as páginas de
+`eletricista`, `pedreiro`, `pintor`, `diarista` e `encanador`. A home **já aparece como
+indexada**; as demais estão na fila de rastreamento.
+
+O sitemap consta como “não foi possível buscar”. Isso é o estado que o Google mostra antes
+da primeira leitura — a coluna “Última leitura” está vazia, ou seja, ele ainda nem tentou.
+Do lado do site está tudo correto e verificado: HTTP 200, `content-type: application/xml`,
+XML válido com 43 URLs, todas dentro do escopo da propriedade, e o Googlebot recebe 200.
+Costuma resolver sozinho em algumas horas. Se em uma semana continuar assim, reenvie.
+
 ## O que depende de você (não consigo fazer sozinho)
 
 Cada item exige login na sua conta — nenhum custa dinheiro.
 
-1. **Google Search Console** — https://search.google.com/search-console
-   Adicionar a propriedade `https://esdrasgomes547-maker.github.io/propostazap/`
-   (tipo “prefixo de URL”), verificar e enviar o sitemap. O Google não aceita IndexNow;
-   é o único caminho de indexação rápida nele, e responde pela maior parte do tráfego.
+1. **Publicar as campanhas.** Material pronto em `CAMPANHAS.md`. Postar em grupo exige
+   suas contas, e postagem em comunidade é coisa que, feita errada, queima o perfil — por
+   isso não faço no automático.
 
 2. **Bing Webmaster Tools** — https://www.bing.com/webmasters
-   Importa direto do Search Console em um clique. Confirma a chave IndexNow já ativa.
+   Importa do Search Console em um clique. Opcional: o IndexNow já alimenta o Bing.
 
 3. **Perfil da Empresa no Google** — se você atende uma região, o perfil aparece no mapa e
    é o canal orgânico de maior conversão para serviço local.
