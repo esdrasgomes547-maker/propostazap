@@ -54,6 +54,27 @@ Regras que valem a pena conhecer antes de mexer:
 Uma SPA com rota em hash não é indexável; por isso o site de conteúdo é estático e o app
 vive em `/app/`.
 
+## Deploy
+
+Automático: todo push em `master` dispara `.github/workflows/deploy.yml`, que roda
+typecheck e testes, builda e publica na branch `gh-pages`. Testes vermelhos não vão ao ar.
+
+A configuração de cobrança vive em **variáveis do repositório** (Settings › Secrets and
+variables › Actions › Variables), não em secrets: esses valores viajam no bundle e no
+código PIX que o cliente lê, então tratá-los como segredo seria mentira. Para mudar preço
+de canal de atendimento ou chave PIX, altere a variável e empurre qualquer commit.
+
+| Variável | Uso |
+|---|---|
+| `VITE_PIX_CHAVE` | chave que recebe as assinaturas |
+| `VITE_PIX_NOME` | nome do recebedor no app do banco (máx. 25, sem acento) |
+| `VITE_PIX_CIDADE` | cidade do recebedor (máx. 15, sem acento) |
+| `VITE_WHATSAPP_SUPORTE` | número que recebe o comprovante |
+
+O workflow falha de propósito se a chave PIX estiver configurada mas não aparecer no
+bundle, ou se o arquivo de verificação do Search Console sumir do build — os dois erros
+seriam silenciosos e caros.
+
 ## Segurança
 
 Auditoria completa, achados e riscos residuais em [`SECURITY.md`](./SECURITY.md).

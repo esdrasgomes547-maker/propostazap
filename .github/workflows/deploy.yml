@@ -1,0 +1,101 @@
+# Publica o site no GitHub Pages a cada push.
+#
+# Duas decisões deliberadas:
+#
+# 1. Os testes rodam ANTES de publicar, e o deploy depende deles. Código
+#    quebrado não chega no ar — é o ponto de ter automação.
+# 2. A publicação empurra para a branch gh-pages em vez de usar o deploy
+#    nativo do Pages. Assim a origem do site continua sendo uma branch, e uma
+#    falha aqui nunca derruba o que já está publicado.
+name: Publicar site
+
+on:
+  push:
+    branches: [master, worktree-propostazap-mvp]
+  workflow_dispatch:
+
+# Um deploy por vez, sem cancelar o que está no meio de uma publicação.
+concurrency:
+  group: publicar-site
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  verificar:
+    name: Testes e tipos
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run test
+
+  publicar:
+    name: Build e publicação
+    needs: verificar
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        env:
+          BASE_PATH: /propostazap/
+          SITE_URL: https://esdrasgomes547-maker.github.io
+          # Não são segredos: viajam no bundle e no PIX que o cliente lê.
+          # Ficam como variáveis do repositório para trocar sem mexer no código.
+          VITE_PIX_CHAVE: ${{ vars.VITE_PIX_CHAVE }}
+          VITE_PIX_NOME: ${{ vars.VITE_PIX_NOME }}
+          VITE_PIX_CIDADE: ${{ vars.VITE_PIX_CIDADE }}
+          VITE_WHATSAPP_SUPORTE: ${{ vars.VITE_WHATSAPP_SUPORTE }}
+        run: npm run build
+
+      - name: Conferir que a cobrança entrou no build
+        env:
+          VITE_PIX_CHAVE: ${{ vars.VITE_PIX_CHAVE }}
+        run: |
+          if [ -z "$VITE_PIX_CHAVE" ]; then
+            echo "::warning::VITE_PIX_CHAVE não configurada — o site vai ao ar sem oferecer compra."
+          elif grep -rq -- "$VITE_PIX_CHAVE" dist/assets/*.js; then
+            echo "Cobrança presente no bundle."
+          else
+            echo "::error::VITE_PIX_CHAVE configurada mas ausente do bundle."
+            exit 1
+          fi
+
+      - name: Conferir que a verificação do Google sobreviveu
+        run: |
+          test -f dist/google70877a97f710bc89.html \
+            || { echo "::error::Arquivo de verificação do Search Console sumiu do build."; exit 1; }
+
+      - name: Publicar na branch gh-pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git clone --branch gh-pages --depth 1 \
+            "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" publicado
+          cd publicado
+          find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+          cp -r ../dist/. .
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Nada mudou no site publicado."
+            exit 0
+          fi
+          git -c user.email=actions@github.com -c user.name="GitHub Actions" \
+            commit -m "deploy: ${GITHUB_SHA::7}"
+          git push
