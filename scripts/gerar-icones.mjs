@@ -8,7 +8,7 @@
  */
 import { deflateSync } from 'node:zlib';
 
-const VERDE = [5, 150, 105];
+const VERDE = [4, 120, 87];
 const BRANCO = [255, 255, 255];
 
 const TABELA_CRC = (() => {
@@ -36,13 +36,35 @@ function bloco(tipo, dados) {
   return Buffer.concat([tamanho, corpo, crc]);
 }
 
-/** Letra P em blocos, em coordenadas relativas ao lado do ícone. */
-const TRACOS = [
-  [0.30, 0.24, 0.42, 0.78], // haste
-  [0.30, 0.24, 0.66, 0.36], // barra de cima
-  [0.56, 0.24, 0.68, 0.58], // lateral direita
-  [0.30, 0.46, 0.66, 0.58], // barra do meio
+/**
+ * A marca: duas réguas horizontais e uma diagonal entre elas, formando um Z.
+ * As réguas são as linhas do bloco de orçamento que o produto substitui.
+ *
+ * Coordenadas relativas ao lado do ícone, para servir em qualquer tamanho.
+ */
+const REGUAS = [
+  [0.30, 0.325, 0.70, 0.395], // régua de cima
+  [0.30, 0.605, 0.70, 0.675], // régua de baixo
 ];
+
+/** A diagonal é um paralelogramo: vai do fim da régua de cima ao início da de baixo. */
+const DIAGONAL = { x0: 0.665, y0: 0.36, x1: 0.335, y1: 0.64, espessura: 0.07 };
+
+/** Distância de um ponto ao segmento da diagonal, para engrossá-la uniformemente. */
+function dentroDaDiagonal(rx, ry) {
+  const { x0, y0, x1, y1, espessura } = DIAGONAL;
+  const dx = x1 - x0;
+  const dy = y1 - y0;
+  const t = Math.max(0, Math.min(1, ((rx - x0) * dx + (ry - y0) * dy) / (dx * dx + dy * dy)));
+  const px = x0 + t * dx;
+  const py = y0 + t * dy;
+  return Math.hypot(rx - px, ry - py) <= espessura / 2;
+}
+
+function naMarca(rx, ry) {
+  if (dentroDaDiagonal(rx, ry)) return true;
+  return REGUAS.some(([x0, y0, x1, y1]) => rx >= x0 && rx < x1 && ry >= y0 && ry < y1);
+}
 
 function pintar(lado) {
   const linhas = [];
@@ -52,8 +74,7 @@ function pintar(lado) {
     for (let x = 0; x < lado; x += 1) {
       const rx = x / lado;
       const ry = y / lado;
-      const naLetra = TRACOS.some(([x0, y0, x1, y1]) => rx >= x0 && rx < x1 && ry >= y0 && ry < y1);
-      const [r, g, b] = naLetra ? BRANCO : VERDE;
+      const [r, g, b] = naMarca(rx, ry) ? BRANCO : VERDE;
       linha[1 + x * 3] = r;
       linha[2 + x * 3] = g;
       linha[3 + x * 3] = b;

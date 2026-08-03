@@ -9,7 +9,7 @@ import { build } from 'esbuild';
 import { createHash } from 'node:crypto';
 import { gerarIcones } from './gerar-icones.mjs';
 import { fonteDoServiceWorker } from './service-worker-fonte.mjs';
-import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -60,50 +60,160 @@ const CSP =
   "default-src 'self'; base-uri 'none'; object-src 'none'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; font-src 'self'; form-action 'none'";
 
 const CSS = `
-:root{--marca:#059669;--marca-escura:#047857;--tinta:#0f172a;--suave:#475569;--borda:#e2e8f0;--fundo:#f8fafc}
+/* Paleta de bloco de orçamento: papel, régua, tinta.
+   A esmeralda é reservada para dinheiro e ação — em nenhum outro lugar. */
+:root{
+  --papel:#f2f1ec; --via:#fff; --regua:#dad8cf;
+  --tinta:#16191c; --tinta-fraca:#6b7076;
+  --esmeralda:#047857; --carbono:#c2410c;
+  --mono:ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --medida:min(100%,72rem);
+}
+@media (prefers-color-scheme:dark){
+  :root{--papel:#13161a;--via:#1a1e24;--regua:#2a2f37;--tinta:#e9e7e2;--tinta-fraca:#98a0aa;--esmeralda:#34d399;--carbono:#f0834f}
+}
+:root[data-theme='dark']{--papel:#13161a;--via:#1a1e24;--regua:#2a2f37;--tinta:#e9e7e2;--tinta-fraca:#98a0aa;--esmeralda:#34d399;--carbono:#f0834f}
+:root[data-theme='light']{--papel:#f2f1ec;--via:#fff;--regua:#dad8cf;--tinta:#16191c;--tinta-fraca:#6b7076;--esmeralda:#047857;--carbono:#c2410c}
+
 *{box-sizing:border-box}
-body{margin:0;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:var(--tinta);background:#fff;line-height:1.65}
-a{color:var(--marca-escura)}
-.topo{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--borda)}
-.faixa{max-width:960px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:12px}
-.marca{display:flex;align-items:center;gap:8px;font-weight:700;text-decoration:none;color:var(--tinta)}
-.marca span{display:grid;place-items:center;width:32px;height:32px;border-radius:9px;background:var(--marca);color:#fff;font-size:11px;font-weight:700;letter-spacing:-.02em}
-.wrap{max-width:960px;margin:0 auto;padding:0 20px}
-.heroi{padding:64px 0 48px;text-align:center}
-.heroi h1{font-size:clamp(30px,5vw,46px);line-height:1.15;margin:0 0 16px;letter-spacing:-.02em}
-.heroi p{font-size:18px;color:var(--suave);max-width:640px;margin:0 auto 28px}
-.btn{display:inline-block;background:var(--marca);color:#fff;text-decoration:none;font-weight:600;padding:14px 28px;border-radius:11px;box-shadow:0 1px 3px rgba(0,0,0,.12)}
-.btn:hover{background:var(--marca-escura)}
-.btn.vazio{background:#fff;color:var(--tinta);border:1px solid var(--borda);box-shadow:none}
-.acoes{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-.selo{display:inline-block;font-size:13px;color:var(--suave);margin-top:14px}
-.grade{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));margin:36px 0}
-.cartao{border:1px solid var(--borda);border-radius:14px;padding:20px;background:#fff}
-.cartao h3{margin:0 0 8px;font-size:17px}
-.cartao p{margin:0;color:var(--suave);font-size:15px}
-section{padding:40px 0;border-top:1px solid var(--borda)}
-h2{font-size:26px;letter-spacing:-.01em;margin:0 0 8px}
-.sub{color:var(--suave);margin:0 0 20px}
-table{width:100%;border-collapse:collapse;font-size:15px;margin:8px 0 4px}
-th,td{text-align:left;padding:11px 8px;border-bottom:1px solid var(--borda)}
-th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--suave)}
-td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-.nota{font-size:13px;color:var(--suave)}
-.faq{border:1px solid var(--borda);border-radius:12px;padding:16px 18px;margin-bottom:10px;background:var(--fundo)}
-.faq h3{margin:0 0 6px;font-size:16px}
-.faq p{margin:0;color:var(--suave);font-size:15px}
-.lista{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));padding:0;list-style:none;margin:0}
-.lista a{display:block;padding:11px 14px;border:1px solid var(--borda);border-radius:10px;text-decoration:none;color:var(--tinta);font-size:15px;background:#fff}
-.lista a:hover{border-color:var(--marca);color:var(--marca-escura)}
-.rodape{border-top:1px solid var(--borda);padding:32px 0;color:var(--suave);font-size:14px;margin-top:24px}
-.migalha{font-size:14px;color:var(--suave);padding-top:22px}
-.migalha a{color:var(--suave)}
-.chamada{background:var(--fundo);border:1px solid var(--borda);border-radius:14px;padding:26px;text-align:center;margin:36px 0}
-.chamada h2{margin:0 0 8px;font-size:22px}
-.chamada p{margin:0 0 18px;color:var(--suave)}
+body{margin:0;background:var(--papel);color:var(--tinta);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--esmeralda);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+.wrap{width:var(--medida);margin:0 auto;padding:0 1.5rem}
+
+/* ---- topo ---- */
+.topo{border-bottom:1px solid var(--regua);background:var(--papel);position:sticky;top:0;z-index:20}
+.faixa{width:var(--medida);margin:0 auto;padding:.9rem 1.5rem;display:flex;align-items:center;gap:.75rem}
+.marca{display:flex;align-items:center;gap:.6rem;text-decoration:none;font-weight:700;letter-spacing:-.02em;font-size:1.02rem}
+.marca svg{display:block;flex:none}
+.topo .btn{margin-left:auto}
+
+/* ---- botões: retangulares, sem raio grande, sem sombra ---- */
+.btn{display:inline-flex;align-items:center;gap:.5rem;background:var(--esmeralda);color:var(--papel);
+  text-decoration:none;font-weight:650;font-size:.95rem;padding:.7rem 1.15rem;border-radius:3px;
+  border:1px solid var(--esmeralda);transition:opacity .15s}
+.btn:hover{opacity:.88}
+.btn.vazio{background:transparent;color:var(--tinta);border-color:var(--tinta)}
+.btn.pequeno{padding:.5rem .85rem;font-size:.85rem}
+
+.rotulo{font-family:var(--mono);font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--tinta-fraca);margin:0}
+
+/* ---- herói assimétrico ---- */
+/* Abertura da home: duas colunas, tese à esquerda e a folha à direita. */
+.abertura{display:grid;grid-template-columns:1fr;gap:2.5rem;padding:clamp(2.5rem,7vw,5rem) 0 clamp(2rem,5vw,3.5rem)}
+@media(min-width:62rem){.abertura{grid-template-columns:1.05fr .95fr;gap:4rem;align-items:center}}
+.abertura h1{font-size:clamp(2.1rem,5.4vw,3.5rem);line-height:1.03;letter-spacing:-.035em;font-weight:800;margin:.9rem 0 0;max-width:16ch;text-wrap:balance}
+.abertura .sub{font-size:clamp(1rem,1.6vw,1.15rem);color:var(--tinta-fraca);max-width:44ch;margin:1.1rem 0 0}
+
+/* Cabeçalho das páginas internas: uma coluna só. */
+.heroi{padding:clamp(1.75rem,4vw,2.75rem) 0 clamp(1.5rem,3vw,2rem)}
+.heroi h1{font-size:clamp(1.8rem,4.2vw,2.7rem);line-height:1.06;letter-spacing:-.03em;font-weight:800;margin:.5rem 0 0;max-width:20ch;text-wrap:balance}
+.heroi p{color:var(--tinta-fraca);max-width:52ch;margin:.9rem 0 0}
+.acoes{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.8rem}
+.selo{font-family:var(--mono);font-size:.72rem;color:var(--tinta-fraca);margin:1.1rem 0 0;letter-spacing:.02em}
+
+/* ---- a folha do bloco ---- */
+.folha{background:var(--via);border:1px solid var(--regua);border-radius:2px;padding:1.5rem 1.35rem 1.25rem;
+  box-shadow:0 1px 0 var(--regua),0 12px 28px -22px rgba(0,0,0,.5);position:relative}
+.folha::before{content:'';position:absolute;left:0;right:0;top:0;height:3px;background:var(--esmeralda)}
+.folha-topo{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;padding-bottom:.9rem;border-bottom:1px solid var(--regua)}
+.folha-topo strong{font-size:1rem;letter-spacing:-.01em}
+.folha-num{font-family:var(--mono);font-size:.72rem;color:var(--tinta-fraca);text-align:right;line-height:1.5}
+.folha table{width:100%;border-collapse:collapse;margin-top:.35rem}
+.folha th{font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--tinta-fraca);font-weight:400;text-align:left;padding:.55rem 0 .4rem}
+.folha th.n,.folha td.n{text-align:right}
+.folha td{padding:.5rem 0;border-bottom:1px solid var(--regua);font-size:.88rem;vertical-align:baseline}
+.folha td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.folha tbody tr:last-child td{border-bottom:0}
+.folha-total{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;margin-top:.9rem;padding-top:.85rem;border-top:2px solid var(--tinta)}
+.folha-total span{font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--tinta-fraca)}
+.folha-total b{font-family:var(--mono);font-size:clamp(1.5rem,3.4vw,1.9rem);font-variant-numeric:tabular-nums;color:var(--esmeralda);letter-spacing:-.03em}
+.folha-pe{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-top:1rem;font-family:var(--mono);font-size:.66rem;color:var(--tinta-fraca)}
+.carimbo{border:1.5px solid var(--esmeralda);color:var(--esmeralda);font-family:var(--mono);font-size:.62rem;
+  letter-spacing:.14em;text-transform:uppercase;padding:.3rem .6rem;transform:rotate(-4deg);white-space:nowrap}
+
+/* ---- seções separadas por régua, sem cartão ---- */
+section{border-top:1px solid var(--regua);padding:clamp(2.5rem,6vw,4rem) 0}
+h2{font-size:clamp(1.45rem,3vw,2rem);letter-spacing:-.025em;margin:.6rem 0 0;font-weight:800;text-wrap:balance;max-width:20ch}
+.sub{color:var(--tinta-fraca);margin:.7rem 0 0;max-width:52ch}
+
+.linhas{margin:2rem 0 0;display:grid;gap:0}
+.linhas > div{display:grid;grid-template-columns:1fr;gap:.3rem;padding:1.35rem 0;border-top:1px solid var(--regua)}
+@media(min-width:52rem){.linhas > div{grid-template-columns:auto 1fr;gap:2rem;align-items:baseline}}
+.linhas > div:first-child{border-top:0}
+.linhas h3{margin:0;font-size:1.02rem;letter-spacing:-.01em;min-width:12rem}
+.linhas p{margin:0;color:var(--tinta-fraca);font-size:.96rem;max-width:56ch}
+
+/* comparação: o jeito velho contra o novo */
+.contraste{display:grid;gap:1.25rem;margin-top:2rem}
+@media(min-width:48rem){.contraste{grid-template-columns:1fr 1fr;gap:2.5rem}}
+.contraste > div{border-top:2px solid var(--regua);padding-top:1rem}
+.contraste > div.certo{border-top-color:var(--esmeralda)}
+.contraste .rotulo{margin-bottom:.6rem}
+.contraste .zap{background:var(--via);border:1px solid var(--regua);border-radius:2px;padding:.7rem .9rem;font-size:.92rem;max-width:22rem}
+.contraste .zap.dele{border-left:3px solid var(--carbono)}
+.contraste p{color:var(--tinta-fraca);font-size:.92rem;margin:.8rem 0 0;max-width:38ch}
+
+/* profissões */
+.lista{display:grid;gap:0;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));padding:0;list-style:none;margin:1.8rem 0 0;border-top:1px solid var(--regua)}
+.lista a{display:block;padding:.85rem .2rem;border-bottom:1px solid var(--regua);text-decoration:none;font-size:.95rem;transition:padding-left .15s,color .15s}
+.lista a:hover{padding-left:.6rem;color:var(--esmeralda)}
+
+/* tabelas de preço nas páginas de profissão */
+table{width:100%;border-collapse:collapse;font-size:.94rem;margin:1.5rem 0 .5rem}
+th,td{text-align:left;padding:.72rem .5rem;border-bottom:1px solid var(--regua)}
+th{font-family:var(--mono);font-size:.63rem;text-transform:uppercase;letter-spacing:.12em;color:var(--tinta-fraca);font-weight:400}
+td.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.nota{font-size:.85rem;color:var(--tinta-fraca);max-width:60ch}
+
+/* perguntas */
+.faq{border-top:1px solid var(--regua);padding:1.35rem 0}
+.faq h3{margin:0 0 .4rem;font-size:1rem;letter-spacing:-.01em}
+.faq p{margin:0;color:var(--tinta-fraca);font-size:.94rem;max-width:62ch}
+
+/* cartões viraram blocos com régua em cima */
+.grade{display:grid;gap:1.5rem;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));margin:2rem 0 0}
+.cartao{border-top:2px solid var(--regua);padding-top:1rem}
+.cartao h3{margin:0 0 .45rem;font-size:1rem;letter-spacing:-.01em}
+.cartao p{margin:0;color:var(--tinta-fraca);font-size:.94rem}
+
+/* chamada final */
+.chamada{border-top:1px solid var(--regua);padding:clamp(2.5rem,6vw,4rem) 0;display:flex;flex-wrap:wrap;
+  align-items:center;justify-content:space-between;gap:1.5rem}
+.chamada > h2{flex:1 1 100%}
+.chamada h2{margin:0}
+.chamada p{margin:.5rem 0 0;color:var(--tinta-fraca);max-width:40ch}
+
+.migalha{font-family:var(--mono);font-size:.7rem;color:var(--tinta-fraca);padding-top:1.5rem;letter-spacing:.04em}
+.migalha a{text-decoration:none}
+.migalha a:hover{color:var(--esmeralda)}
+
+.rodape{border-top:1px solid var(--regua);padding:2.5rem 0 3.5rem;color:var(--tinta-fraca);font-size:.86rem;margin-top:1rem}
+.rodape p{margin:.4rem 0;max-width:62ch}
+.rodape a{color:var(--tinta)}
 `;
 
-function pagina({ titulo, descricao, caminho, corpo, jsonLd }) {
+
+/**
+ * Marca: um Z traçado entre duas réguas — as linhas do bloco de orçamento que
+ * o produto substitui. Legível a 16px, sem depender de texto dentro do ícone.
+ */
+const MARCA_SVG = (lado = 28) =>
+  `<svg width="${lado}" height="${lado}" viewBox="0 0 32 32" role="img" aria-label="Orça no ZAP">` +
+  `<rect width="32" height="32" rx="7" fill="#047857"/>` +
+  `<path d="M9.5 11h13M9.5 21h13M21.5 11 10.5 21" stroke="#fff" stroke-width="2.6" ` +
+  `stroke-linecap="round" fill="none"/></svg>`;
+
+const FAVICON =
+  "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'>" +
+  "<rect width='32' height='32' rx='7' fill='%23047857'/>" +
+  "<path d='M9.5 11h13M9.5 21h13M21.5 11 10.5 21' stroke='white' stroke-width='2.6' " +
+  "stroke-linecap='round' fill='none'/></svg>";
+
+function pagina({ titulo, descricao, caminho, corpo, jsonLd, script = false }) {
   const canonico = `${SITE}${caminho}`;
   return `<!doctype html>
 <html lang="pt-BR">
@@ -122,25 +232,26 @@ function pagina({ titulo, descricao, caminho, corpo, jsonLd }) {
 <meta property="og:locale" content="pt_BR">
 <meta name="twitter:card" content="summary">
 <meta name="theme-color" content="#059669">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23059669'/><text y='64' x='50' text-anchor='middle' font-size='38' font-family='sans-serif' font-weight='bold' fill='white'>OZ</text></svg>">
+<link rel="icon" href="${FAVICON}">
 <style>${CSS}</style>
 ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, '\\u003c')}</script>` : ''}
 </head>
 <body>
 <header class="topo">
   <div class="faixa">
-    <a class="marca" href="${BASE}"><span>OZ</span>Orça no ZAP</a>
-    <a class="btn" style="margin-left:auto;padding:9px 18px;font-size:14px" href="${BASE}app/">Abrir o app</a>
+    <a class="marca" href="${BASE}">${MARCA_SVG(28)}Orça no ZAP</a>
+    <a class="btn pequeno" href="${BASE}app/">Abrir o app</a>
   </div>
 </header>
 ${corpo}
 <footer class="rodape">
   <div class="wrap">
-    <p><strong>Orça no ZAP</strong> — orçamentos profissionais em 2 minutos, direto do celular.</p>
+    <p><strong>Orça no ZAP</strong> — orçamento profissional em 2 minutos, direto do celular.</p>
     <p>Os valores citados são faixas de referência de mercado para ajudar na montagem do seu orçamento. Não são cotação nem tabela oficial: quem define o preço do seu serviço é você.</p>
     <p><a href="${BASE}modelos/">Todos os modelos</a> · <a href="${BASE}precos/">Preços</a> · <a href="${BASE}app/">Abrir o app</a></p>
   </div>
 </footer>
+${script ? `<script type="module" src="${BASE}landing.js"></script>` : ''}
 </body>
 </html>`;
 }
@@ -165,10 +276,10 @@ function paginaProfissao(p, comuns) {
   const corpo = `
 <div class="wrap">
   <nav class="migalha"><a href="${BASE}">Início</a> › <a href="${BASE}modelos/">Modelos</a> › ${esc(p.nome)}</nav>
-  <div class="heroi" style="text-align:left;padding:28px 0 32px">
+  <div class="heroi">
     <h1>Modelo de orçamento para ${esc(p.nome.toLowerCase())}</h1>
-    <p style="margin-left:0">${esc(p.intro)}</p>
-    <div class="acoes" style="justify-content:flex-start">
+    <p>${esc(p.intro)}</p>
+    <div class="acoes">
       <a class="btn" href="${BASE}app/#/nova/${esc(p.slug)}">Criar orçamento de ${esc(p.nome.toLowerCase())}</a>
       <a class="btn vazio" href="${BASE}modelos/">Ver outras profissões</a>
     </div>
@@ -193,8 +304,10 @@ function paginaProfissao(p, comuns) {
       <div class="cartao"><h3>3. Envie pelo WhatsApp</h3><p>Gere o link do orçamento ou salve em PDF e mande para o cliente direto do celular.</p></div>
     </div>
     <div class="chamada">
-      <h2>Seu próximo orçamento sai daqui</h2>
-      <p>Sem instalar nada, sem criar conta, sem pagar.</p>
+      <div>
+        <h2>Seu próximo orçamento sai daqui</h2>
+        <p>Sem instalar nada, sem criar conta, sem pagar.</p>
+      </div>
       <a class="btn" href="${BASE}app/#/nova/${esc(p.slug)}">Começar agora</a>
     </div>
   </section>
@@ -256,9 +369,9 @@ function paginaModelos(profissoes) {
   const corpo = `
 <div class="wrap">
   <nav class="migalha"><a href="${BASE}">Início</a> › Modelos</nav>
-  <div class="heroi" style="text-align:left;padding:28px 0 12px">
+  <div class="heroi">
     <h1>Modelos de orçamento por profissão</h1>
-    <p style="margin-left:0">${profissoes.length} modelos prontos, com os serviços mais pedidos de cada área já cadastrados e faixas de preço de referência.</p>
+    <p>${profissoes.length} modelos prontos, com os serviços mais pedidos de cada área já cadastrados e faixas de preço de referência.</p>
   </div>
   ${blocos}
 </div>`;
@@ -280,7 +393,7 @@ function paginaPrecos() {
   const corpo = `
 <div class="wrap">
   <nav class="migalha"><a href="${BASE}">Início</a> › Preços</nav>
-  <div class="heroi" style="padding:34px 0 24px">
+  <div class="heroi">
     <h1>Grátis para começar. Barato para crescer.</h1>
     <p>Sem cartão, sem cadastro, sem fidelidade. O plano gratuito não expira.</p>
   </div>
@@ -313,8 +426,10 @@ function paginaPrecos() {
   </section>
 
   <div class="chamada">
-    <h2>Comece pelo gratuito</h2>
-    <p>Sem cadastro. Se gostar, o Pro está a um PIX de distância.</p>
+    <div>
+      <h2>Comece pelo gratuito</h2>
+      <p>Sem cadastro. Se gostar, o Pro está a um PIX de distância.</p>
+    </div>
     <a class="btn" href="${BASE}app/">Criar orçamento grátis</a>
   </div>
 </div>`;
@@ -345,31 +460,133 @@ function paginaPrecos() {
 
 function paginaInicial(profissoes) {
   const destaques = profissoes.slice(0, 12);
+
+  // Os valores viajam em centavos para o script contar até eles na abertura.
+  const itens = [
+    ['Instalação de ponto de tomada', '4', 'un', 9000, 36000],
+    ['Troca de quadro com disjuntor DR', '1', 'un', 95000, 95000],
+    ['Passagem de cabo em eletroduto', '18', 'm', 2200, 39600],
+  ];
+
+  const linhas = itens
+    .map(
+      ([desc, qtd, un, unit, tot]) => `
+          <tr data-linha>
+            <td>${esc(desc)}</td>
+            <td class="n">${esc(qtd)}</td>
+            <td class="n">${esc(un)}</td>
+            <td class="n" data-centavos="${unit}">${esc(reais(unit).replace('R$ ', ''))}</td>
+            <td class="n" data-centavos="${tot}">${esc(reais(tot).replace('R$ ', ''))}</td>
+          </tr>`,
+    )
+    .join('');
+
   const corpo = `
 <div class="wrap">
-  <div class="heroi">
-    <h1>Orçamento profissional em 2 minutos, direto do celular</h1>
-    <p>Pare de mandar preço solto no WhatsApp. Monte um orçamento com seus dados, itens detalhados, prazo, garantia e validade — e descubra sua margem antes de enviar.</p>
-    <div class="acoes">
-      <a class="btn" href="${BASE}app/">Criar meu orçamento grátis</a>
-      <a class="btn vazio" href="${BASE}modelos/">Ver modelos por profissão</a>
-      <a class="btn vazio" href="${BASE}precos/">Preços</a>
+  <div class="abertura">
+    <div>
+      <p class="rotulo">Para quem vive de prestar serviço</p>
+      <h1>Preço solto no zap vira leilão.</h1>
+      <p class="sub">
+        Quando você manda só o número, o cliente só consegue comparar número. Mande o
+        orçamento inteiro — itens, prazo, garantia, validade — e saiba sua margem antes
+        de apertar enviar.
+      </p>
+      <div class="acoes">
+        <a class="btn" href="${BASE}app/">Fazer meu orçamento</a>
+        <a class="btn vazio" href="${BASE}modelos/">Ver modelos por profissão</a>
+      </div>
+      <p class="selo">grátis · sem cadastro · seus dados ficam no seu aparelho</p>
     </div>
-    <p class="selo">Sem cadastro · sem instalar nada · seus dados ficam no seu aparelho</p>
+
+    <div class="folha" data-folha>
+      <div class="folha-topo">
+        <div>
+          <strong>Elétrica Silva</strong>
+          <p class="rotulo" style="margin-top:.25rem">Instalação de quadro</p>
+        </div>
+        <div class="folha-num">Nº 0042<br>válido até 18/08</div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Serviço</th><th class="n">Qtd</th><th class="n">Un</th>
+            <th class="n">Unit.</th><th class="n">Total</th>
+          </tr>
+        </thead>
+        <tbody>${linhas}</tbody>
+      </table>
+      <div class="folha-total">
+        <span>Total</span>
+        <b data-total>R$ 1.706,00</b>
+      </div>
+      <div class="folha-pe">
+        <span>50% na aprovação · garantia 12 meses</span>
+        <span class="carimbo" data-carimbo>enviado no zap</span>
+      </div>
+    </div>
   </div>
 
-  <section>
-    <h2>Por que quem orça por escrito cobra mais caro</h2>
-    <div class="grade">
-      <div class="cartao"><h3>Preço solto vira leilão</h3><p>Um número no WhatsApp só pode ser comparado por valor. Um orçamento detalhado mostra o que está incluso e tira você da guerra de preço.</p></div>
-      <div class="cartao"><h3>Você enxerga sua margem</h3><p>Lance o custo de cada item e veja lucro e percentual em tempo real. Dá para descobrir na hora se o desconto pedido cabe.</p></div>
-      <div class="cartao"><h3>Prazo e validade no papel</h3><p>Validade curta cria urgência e protege você de variação de preço de material. Tudo já sai impresso na proposta.</p></div>
+  <section data-revela>
+    <p class="rotulo">O que muda na prática</p>
+    <h2>A mesma obra, contada de dois jeitos</h2>
+    <div class="contraste">
+      <div>
+        <p class="rotulo">Como costuma ser</p>
+        <div class="zap dele">fica 1700</div>
+        <p>
+          O cliente pergunta pro próximo e fecha com quem disser 1600. Você não perdeu no
+          preço — perdeu por não ter mostrado o que estava incluso.
+        </p>
+      </div>
+      <div class="certo">
+        <p class="rotulo">Como fica</p>
+        <div class="zap">
+          <strong>Orçamento nº 0042</strong><br>
+          3 itens · prazo 3 dias · garantia 12 meses<br>
+          <span style="color:var(--esmeralda);font-weight:650">Total R$ 1.706,00</span>
+        </div>
+        <p>
+          Agora não é número contra número. É proposta, com prazo e garantia escritos — e
+          fica muito mais difícil de comparar com chute.
+        </p>
+      </div>
     </div>
   </section>
 
-  <section>
-    <h2>Modelos prontos por profissão</h2>
-    <p class="sub">Serviços mais pedidos já cadastrados, com faixa de preço de referência.</p>
+  <section data-revela>
+    <p class="rotulo">Por dentro</p>
+    <h2>Três coisas que ninguém faz na planilha</h2>
+    <div class="linhas">
+      <div>
+        <h3>Sua margem, ao vivo</h3>
+        <p>
+          Lance o custo de cada item e o lucro aparece na tela enquanto você monta. Dá para
+          descobrir na hora se o desconto que o cliente pediu ainda cabe — ou se aquele
+          serviço que você achava bom estava te pagando quase nada.
+        </p>
+      </div>
+      <div>
+        <h3>Vai pelo zap, abre no celular</h3>
+        <p>
+          Você gera um link e manda na conversa. O cliente abre sem instalar nada e sem se
+          cadastrar. Se preferir papel, salva em PDF.
+        </p>
+      </div>
+      <div>
+        <h3>Funciona sem internet</h3>
+        <p>
+          Instale na tela de início e o app abre em obra, porão e subsolo. Seus orçamentos
+          ficam no aparelho — não passam por servidor nenhum, nem os seus nem os do cliente.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section data-revela>
+    <p class="rotulo">${profissoes.length} profissões</p>
+    <h2>Os serviços da sua área já vêm preenchidos</h2>
+    <p class="sub">Com faixa de preço de referência para você ajustar, não para copiar.</p>
     <ul class="lista">
       ${destaques
         .map(
@@ -378,21 +595,24 @@ function paginaInicial(profissoes) {
         )
         .join('')}
     </ul>
-    <p style="margin-top:16px"><a href="${BASE}modelos/">Ver todas as ${profissoes.length} profissões →</a></p>
+    <p style="margin-top:1.5rem"><a href="${BASE}modelos/">Ver todas as ${profissoes.length} profissões &rarr;</a></p>
   </section>
 
-  <section>
-    <h2>Perguntas frequentes</h2>
-    <div class="faq"><h3>Preciso pagar alguma coisa?</h3><p>Não. Você cria até 5 orçamentos por mês sem pagar nada e sem cadastro. O plano ilimitado é opcional.</p></div>
-    <div class="faq"><h3>Meus dados ficam guardados onde?</h3><p>No seu próprio navegador. Nada é enviado para servidor nenhum — nem seus orçamentos, nem seus clientes. Você pode baixar um backup a qualquer momento.</p></div>
-    <div class="faq"><h3>Como o cliente recebe o orçamento?</h3><p>Você gera um link e manda pelo WhatsApp, ou salva em PDF. O cliente abre no celular sem instalar nada.</p></div>
-    <div class="faq"><h3>Funciona para qualquer profissão?</h3><p>Sim. Há ${profissoes.length} modelos prontos, e você pode montar um orçamento em branco com seus próprios itens.</p></div>
+  <section data-revela>
+    <p class="rotulo">Perguntas</p>
+    <h2>O que perguntam antes de usar</h2>
+    <div class="faq"><h3>Preciso pagar?</h3><p>Não. São 5 orçamentos por mês de graça, e isso não expira. O plano ilimitado é opcional e custa R$ 197 por ano.</p></div>
+    <div class="faq"><h3>Onde ficam meus dados?</h3><p>No seu navegador. Nada é enviado para servidor nenhum — nem seus orçamentos, nem os dados dos seus clientes. Dá para baixar um backup quando quiser.</p></div>
+    <div class="faq"><h3>Preciso instalar?</h3><p>Não. Abre como site no celular. Se quiser, adicione à tela de início e ele passa a abrir como aplicativo, inclusive sem internet.</p></div>
+    <div class="faq"><h3>Serve para a minha profissão?</h3><p>São ${profissoes.length} modelos prontos, de pedreiro a confeiteiro. E dá para montar do zero com seus próprios itens.</p></div>
   </section>
 
   <div class="chamada">
-    <h2>Comece pelo seu próximo orçamento</h2>
-    <p>Leva menos tempo do que digitar o preço na conversa.</p>
-    <a class="btn" href="${BASE}app/">Criar orçamento grátis</a>
+    <div>
+      <h2>Seu próximo orçamento sai daqui</h2>
+      <p>Leva menos tempo do que digitar o preço na conversa.</p>
+    </div>
+    <a class="btn" href="${BASE}app/">Começar agora</a>
   </div>
 </div>`;
 
@@ -408,24 +628,46 @@ function paginaInicial(profissoes) {
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'BRL' },
   };
 
-  return { caminho: BASE, html: pagina({ titulo: 'Orça no ZAP — orçamento profissional em 2 minutos', descricao: 'Monte orçamentos profissionais e envie pelo WhatsApp em 2 minutos. Grátis, sem cadastro, com controle de custo e lucro.', caminho: BASE, corpo, jsonLd }) };
+  return {
+    caminho: BASE,
+    html: pagina({
+      titulo: 'Orça no ZAP — orçamento profissional em 2 minutos',
+      descricao:
+        'Monte orçamentos profissionais e envie pelo WhatsApp em 2 minutos. Grátis, sem cadastro, com controle de custo e lucro.',
+      caminho: BASE,
+      corpo,
+      jsonLd,
+      script: true,
+    }),
+  };
 }
 
-
 /**
- * Gera o service worker com a lista de arquivos daquele build.
- *
- * O nome dos assets carrega hash, então a lista precisa sair do build — não dá
- * para escrever à mão. A versão do cache também vem daí: assets novos mudam a
- * versão e o cache velho é apagado no activate.
- *
- * O código em si mora em service-worker-fonte.mjs, para poder ser testado.
+ * Empacota a animação da página inicial. O anime.js entra aqui, não por CDN:
+ * a CSP do site é `script-src 'self'`, e recurso de terceiro em runtime é
+ * superfície de ataque que este projeto não abre.
  */
+async function escreverScriptDaLanding() {
+  await build({
+    entryPoints: [join(RAIZ, 'scripts/landing.js')],
+    outfile: join(DIST, 'landing.js'),
+    bundle: true,
+    format: 'esm',
+    minify: true,
+    target: 'es2020',
+    logLevel: 'silent',
+  });
+
+  const { size } = await stat(join(DIST, 'landing.js'));
+  return Math.round(size / 1024);
+}
+
 async function escreverServiceWorker() {
   const assets = await readdir(join(DIST, 'assets')).catch(() => []);
   const precache = [
     `${BASE}app/`,
     `${BASE}manifest.webmanifest`,
+    `${BASE}landing.js`,
     ...assets.map((a) => `${BASE}assets/${a}`),
   ];
 
@@ -500,10 +742,12 @@ ${urls.map((u) => `  <url><loc>${SITE}${u}</loc></url>`).join('\n')}
   // GitHub Pages ignora arquivos que começam com _ sem isto.
   await writeFile(join(DIST, '.nojekyll'), '', 'utf8');
 
+  const kbLanding = await escreverScriptDaLanding();
   const sw = await escreverServiceWorker();
 
   console.log(`SEO: ${paginas.length} páginas + sitemap com ${urls.length} URLs`);
   console.log(`Offline: service worker com ${sw.arquivos} arquivos no precache`);
+  console.log(`Landing: animação empacotada em ${kbLanding} KB`);
 }
 
 principal().catch((erro) => {
