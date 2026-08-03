@@ -78,7 +78,7 @@ console.log(`\nCliente:   ${nome}`);
 console.log(`Identific: ${id}`);
 console.log(`Vence em:  ${vencimento}`);
 console.log(`\nMensagem pronta para enviar no WhatsApp:\n`);
-console.log(`Pagamento confirmado, obrigado! Seu PropostaZap Pro está liberado.
+console.log(`Pagamento confirmado, obrigado! Seu Orça no ZAP Pro está liberado.
 
 Abra o app, vá em Configurações > Plano e cole este código de ativação:
 

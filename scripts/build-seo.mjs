@@ -16,7 +16,7 @@ const DIST = join(RAIZ, 'dist');
 // SITE é só a origem (sem caminho); BASE é o prefixo de URL onde o site é servido.
 // GitHub Pages de projeto serve em /<repo>/, então os dois se somam na URL —
 // mas em disco os arquivos vão na raiz de dist/, sem o prefixo.
-const SITE = process.env.SITE_URL?.replace(/\/$/, '') ?? 'https://propostazap.pages.dev';
+const SITE = process.env.SITE_URL?.replace(/\/$/, '') ?? 'https://orcanozap.pages.dev';
 const BASE = process.env.BASE_PATH ?? '/';
 
 /** Converte um caminho de URL no caminho de arquivo correspondente dentro de dist/. */
@@ -64,7 +64,7 @@ a{color:var(--marca-escura)}
 .topo{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--borda)}
 .faixa{max-width:960px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:12px}
 .marca{display:flex;align-items:center;gap:8px;font-weight:700;text-decoration:none;color:var(--tinta)}
-.marca span{display:grid;place-items:center;width:32px;height:32px;border-radius:9px;background:var(--marca);color:#fff;font-size:15px}
+.marca span{display:grid;place-items:center;width:32px;height:32px;border-radius:9px;background:var(--marca);color:#fff;font-size:11px;font-weight:700;letter-spacing:-.02em}
 .wrap{max-width:960px;margin:0 auto;padding:0 20px}
 .heroi{padding:64px 0 48px;text-align:center}
 .heroi h1{font-size:clamp(30px,5vw,46px);line-height:1.15;margin:0 0 16px;letter-spacing:-.02em}
@@ -119,21 +119,21 @@ function pagina({ titulo, descricao, caminho, corpo, jsonLd }) {
 <meta property="og:locale" content="pt_BR">
 <meta name="twitter:card" content="summary">
 <meta name="theme-color" content="#059669">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23059669'/><text y='72' x='50' text-anchor='middle' font-size='64' font-family='sans-serif' font-weight='bold' fill='white'>P</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23059669'/><text y='64' x='50' text-anchor='middle' font-size='38' font-family='sans-serif' font-weight='bold' fill='white'>OZ</text></svg>">
 <style>${CSS}</style>
 ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, '\\u003c')}</script>` : ''}
 </head>
 <body>
 <header class="topo">
   <div class="faixa">
-    <a class="marca" href="${BASE}"><span>P</span>PropostaZap</a>
+    <a class="marca" href="${BASE}"><span>OZ</span>Orça no ZAP</a>
     <a class="btn" style="margin-left:auto;padding:9px 18px;font-size:14px" href="${BASE}app/">Abrir o app</a>
   </div>
 </header>
 ${corpo}
 <footer class="rodape">
   <div class="wrap">
-    <p><strong>PropostaZap</strong> — orçamentos profissionais em 2 minutos, direto do celular.</p>
+    <p><strong>Orça no ZAP</strong> — orçamentos profissionais em 2 minutos, direto do celular.</p>
     <p>Os valores citados são faixas de referência de mercado para ajudar na montagem do seu orçamento. Não são cotação nem tabela oficial: quem define o preço do seu serviço é você.</p>
     <p><a href="${BASE}modelos/">Todos os modelos</a> · <a href="${BASE}precos/">Preços</a> · <a href="${BASE}app/">Abrir o app</a></p>
   </div>
@@ -319,7 +319,7 @@ function paginaPrecos() {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Product',
-    name: 'PropostaZap Pro',
+    name: 'Orça no ZAP Pro',
     description: 'Orçamentos ilimitados para prestadores de serviço.',
     offers: [
       { '@type': 'Offer', name: 'Pro anual', price: '197.00', priceCurrency: 'BRL' },
@@ -330,7 +330,7 @@ function paginaPrecos() {
   return {
     caminho,
     html: pagina({
-      titulo: 'Preços — PropostaZap',
+      titulo: 'Preços — Orça no ZAP',
       descricao:
         'Plano gratuito com 5 orçamentos por mês, para sempre. Pro ilimitado por R$ 197 ao ano ou R$ 29 ao mês, pago por PIX, sem cartão e sem fidelidade.',
       caminho,
@@ -396,7 +396,7 @@ function paginaInicial(profissoes) {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
-    name: 'PropostaZap',
+    name: 'Orça no ZAP',
     applicationCategory: 'BusinessApplication',
     operatingSystem: 'Web',
     inLanguage: 'pt-BR',
@@ -405,7 +405,7 @@ function paginaInicial(profissoes) {
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'BRL' },
   };
 
-  return { caminho: BASE, html: pagina({ titulo: 'PropostaZap — orçamento profissional em 2 minutos', descricao: 'Monte orçamentos profissionais e envie pelo WhatsApp em 2 minutos. Grátis, sem cadastro, com controle de custo e lucro.', caminho: BASE, corpo, jsonLd }) };
+  return { caminho: BASE, html: pagina({ titulo: 'Orça no ZAP — orçamento profissional em 2 minutos', descricao: 'Monte orçamentos profissionais e envie pelo WhatsApp em 2 minutos. Grátis, sem cadastro, com controle de custo e lucro.', caminho: BASE, corpo, jsonLd }) };
 }
 
 async function escrever(caminho, html) {
@@ -443,8 +443,8 @@ ${urls.map((u) => `  <url><loc>${SITE}${u}</loc></url>`).join('\n')}
   await writeFile(
     join(DIST, 'manifest.webmanifest'),
     JSON.stringify({
-      name: 'PropostaZap',
-      short_name: 'PropostaZap',
+      name: 'Orça no ZAP — orçamentos em 2 minutos',
+      short_name: 'Orça no ZAP',
       start_url: `${BASE}app/`,
       display: 'standalone',
       background_color: '#f8fafc',

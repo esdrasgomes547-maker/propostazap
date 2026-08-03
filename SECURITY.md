@@ -1,10 +1,10 @@
-# Auditoria de segurança — PropostaZap
+# Auditoria de segurança — Orça no ZAP
 
 Data: 30/07/2026 · Versão auditada: commit inicial do MVP · Revisor: Claude (Opus 5)
 
 ## 1. Escopo e modelo de ameaça
 
-O PropostaZap é uma aplicação **inteiramente client-side**. Não há backend, banco de
+O Orça no ZAP é uma aplicação **inteiramente client-side**. Não há backend, banco de
 dados, sessão, autenticação nem endpoint de API. Isso remove de partida classes inteiras
 de vulnerabilidade (SQL injection, SSRF, IDOR, falha de autorização, exposição de
 credencial no servidor) e concentra o risco em três superfícies:

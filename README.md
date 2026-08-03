@@ -1,9 +1,9 @@
-# PropostaZap
+# Orça no ZAP
 
 Orçamentos profissionais em 2 minutos, direto do celular, para prestadores de serviço.
 
 Prestador autônomo perde dinheiro mandando preço solto no WhatsApp: sem itens
-detalhados, a conversa vira comparação de número contra número. O PropostaZap monta a
+detalhados, a conversa vira comparação de número contra número. O Orça no ZAP monta a
 proposta completa — itens, prazo, garantia, validade e condições de pagamento — e ainda
 mostra o **lucro real** antes de o preço ser enviado.
 

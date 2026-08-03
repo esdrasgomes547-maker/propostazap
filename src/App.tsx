@@ -16,10 +16,10 @@ function Cabecalho({ mostrarConfig }: { mostrarConfig: boolean }) {
           onClick={() => irPara('/')}
           className="flex items-center gap-2 text-left"
         >
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-marca-600 text-sm font-bold text-white">
-            P
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-marca-600 text-xs font-bold tracking-tight text-white">
+            OZ
           </span>
-          <span className="font-semibold text-slate-900">PropostaZap</span>
+          <span className="font-semibold text-slate-900">Orça no ZAP</span>
         </button>
         {mostrarConfig && (
           <button

@@ -901,7 +901,7 @@ export function duvidasComuns(profissao: Profissao): Duvida[] {
     {
       pergunta: `Quanto tempo um orçamento de ${profissao.nome.toLowerCase()} deve valer?`,
       resposta:
-        'Entre 7 e 15 dias. Prazo curto cria urgência e protege você de variação de preço de material. O PropostaZap mostra a data de validade direto na proposta.',
+        'Entre 7 e 15 dias. Prazo curto cria urgência e protege você de variação de preço de material. No Orça no ZAP, a data de validade aparece direto na proposta.',
     },
     {
       pergunta: 'Preciso ter CNPJ para enviar orçamento?',
