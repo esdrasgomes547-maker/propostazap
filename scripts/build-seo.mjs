@@ -264,11 +264,11 @@ ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd).replace(
 <header class="topo">
   <div class="faixa">
     <a class="marca" href="${BASE}">${MARCA_SVG(28)}Orça no ZAP</a>
-    <div style="margin-left:auto;display:flex;align-items:center;gap:.5rem">
-      <button type="button" id="theme-toggle" class="btn vazio pequeno" aria-label="Alternar tema" style="cursor:pointer;padding:.4rem .6rem">
-        🌙 Modo Escuro
+    <div style="margin-left:auto;display:flex;align-items:center;gap:.4rem">
+      <button type="button" id="theme-toggle" class="btn vazio pequeno" aria-label="Alternar tema" style="cursor:pointer;padding:.45rem .65rem;min-height:44px;display:inline-flex;align-items:center;gap:.35rem">
+        🌙 <span class="tema-lbl">Modo Escuro</span>
       </button>
-      <a class="btn pequeno" href="${BASE}app/">Abrir o app</a>
+      <a class="btn pequeno" href="${BASE}app/" style="min-height:44px;display:inline-flex;align-items:center">Abrir o app</a>
     </div>
   </div>
 </header>
@@ -286,7 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!btn) return;
   const updateBtn = () => {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    btn.textContent = isDark ? '☀️ Modo Claro' : '🌙 Modo Escuro';
+    btn.innerHTML = isDark ? '☀️ <span class="tema-lbl">Modo Claro</span>' : '🌙 <span class="tema-lbl">Modo Escuro</span>';
   };
   updateBtn();
   btn.addEventListener('click', () => {
