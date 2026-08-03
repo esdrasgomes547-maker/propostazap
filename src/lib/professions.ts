@@ -887,6 +887,28 @@ export const PROFISSOES: Profissao[] = [
     garantiaMeses: 0,
     prazoDias: 3,
   },
+  {
+    slug: 'montagem-instalacao-glp',
+    nome: 'Montagem e instalação de GLP',
+    categoria: 'Instalações',
+    intro:
+      'Orçamento para montagem e instalação de rede de gás GLP exige especificação das normas técnicas (NBR 13523 / NBR 15526), teste de estanqueidade e laudo técnico. Detalhar tubulações, reguladores e central de gás garante a segurança e justifica a precificação justa do serviço.',
+    servicos: [
+      s('Instalação de central de gás GLP (P20/P45)', 'un', 480),
+      s('Passagem de tubulação de cobre/multicamada para GLP', 'm', 45),
+      s('Teste de estanqueidade com laudo técnico', 'un', 350),
+      s('Instalação de regulador de pressão e manômetro', 'un', 180),
+      s('Conversão de fogão ou cooktop para GLP', 'un', 150),
+    ],
+    duvidaEspecifica: {
+      pergunta: 'É necessário emitir laudo de estanqueidade na instalação de GLP?',
+      resposta:
+        'Sim. A realização do teste de estanqueidade com emissão de laudo técnico ou ART garante a conformidade com as normas de segurança do Corpo de Bombeiros e traz total segurança para você e seu cliente.',
+    },
+    condicoesPagamento: '50% na aprovação e 50% na conclusão e entrega do laudo.',
+    garantiaMeses: 12,
+    prazoDias: 3,
+  },
 ];
 
 const POR_SLUG = new Map(PROFISSOES.map((p) => [p.slug, p]));

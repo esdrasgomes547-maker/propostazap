@@ -248,13 +248,28 @@ function pagina({ titulo, descricao, caminho, corpo, jsonLd, script = false }) {
 <meta name="theme-color" content="#059669">
 <link rel="icon" href="${FAVICON}">
 <style>${CSS}</style>
+<script>
+(function(){
+  const s = localStorage.getItem('theme');
+  if (s === 'dark' || (!s && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  } else {
+    document.documentElement.setAttribute('data-theme', 'light');
+  }
+})();
+</script>
 ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, '\\u003c')}</script>` : ''}
 </head>
 <body>
 <header class="topo">
   <div class="faixa">
     <a class="marca" href="${BASE}">${MARCA_SVG(28)}Orça no ZAP</a>
-    <a class="btn pequeno" href="${BASE}app/">Abrir o app</a>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:.5rem">
+      <button type="button" id="theme-toggle" class="btn vazio pequeno" aria-label="Alternar tema" style="cursor:pointer;padding:.4rem .6rem">
+        🌙 Modo Escuro
+      </button>
+      <a class="btn pequeno" href="${BASE}app/">Abrir o app</a>
+    </div>
   </div>
 </header>
 ${corpo}
@@ -265,6 +280,24 @@ ${corpo}
     <p><a href="${BASE}modelos/">Todos os modelos</a> · <a href="${BASE}precos/">Preços</a> · <a href="${BASE}app/">Abrir o app</a></p>
   </div>
 </footer>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('theme-toggle');
+  if (!btn) return;
+  const updateBtn = () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    btn.textContent = isDark ? '☀️ Modo Claro' : '🌙 Modo Escuro';
+  };
+  updateBtn();
+  btn.addEventListener('click', () => {
+    const cur = document.documentElement.getAttribute('data-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    const next = cur === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    updateBtn();
+  });
+});
+</script>
 ${script ? `<script type="module" src="${BASE}landing.js"></script>` : ''}
 </body>
 </html>`;
