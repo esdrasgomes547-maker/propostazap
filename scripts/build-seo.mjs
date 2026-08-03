@@ -19,7 +19,21 @@ const DIST = join(RAIZ, 'dist');
 // SITE é só a origem (sem caminho); BASE é o prefixo de URL onde o site é servido.
 // GitHub Pages de projeto serve em /<repo>/, então os dois se somam na URL —
 // mas em disco os arquivos vão na raiz de dist/, sem o prefixo.
-const SITE = process.env.SITE_URL?.replace(/\/$/, '') ?? 'https://orcanozap.pages.dev';
+/**
+ * Origem do site, para URL canônica e sitemap.
+ *
+ * Na Vercel o domínio só é conhecido depois do projeto criado, então o build
+ * lê a variável que ela injeta sozinha. SITE_URL continua tendo prioridade,
+ * que é como o GitHub Pages e um domínio próprio entram.
+ */
+const SITE = (
+  process.env.SITE_URL ??
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : 'https://orcanozap.vercel.app')
+).replace(/\/$/, '');
+
+/** GitHub Pages de projeto serve em /<repo>/; Vercel e domínio próprio, na raiz. */
 const BASE = process.env.BASE_PATH ?? '/';
 
 /** Converte um caminho de URL no caminho de arquivo correspondente dentro de dist/. */
