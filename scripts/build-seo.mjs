@@ -6,7 +6,10 @@
  * Roda depois do `vite build`, escrevendo dentro de dist/.
  */
 import { build } from 'esbuild';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { gerarIcones } from './gerar-icones.mjs';
+import { fonteDoServiceWorker } from './service-worker-fonte.mjs';
+import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -408,6 +411,31 @@ function paginaInicial(profissoes) {
   return { caminho: BASE, html: pagina({ titulo: 'Orça no ZAP — orçamento profissional em 2 minutos', descricao: 'Monte orçamentos profissionais e envie pelo WhatsApp em 2 minutos. Grátis, sem cadastro, com controle de custo e lucro.', caminho: BASE, corpo, jsonLd }) };
 }
 
+
+/**
+ * Gera o service worker com a lista de arquivos daquele build.
+ *
+ * O nome dos assets carrega hash, então a lista precisa sair do build — não dá
+ * para escrever à mão. A versão do cache também vem daí: assets novos mudam a
+ * versão e o cache velho é apagado no activate.
+ *
+ * O código em si mora em service-worker-fonte.mjs, para poder ser testado.
+ */
+async function escreverServiceWorker() {
+  const assets = await readdir(join(DIST, 'assets')).catch(() => []);
+  const precache = [
+    `${BASE}app/`,
+    `${BASE}manifest.webmanifest`,
+    ...assets.map((a) => `${BASE}assets/${a}`),
+  ];
+
+  const versao = assets.slice().sort().join('|') || 'sem-assets';
+  const cache = `propostazap-${createHash('sha1').update(versao).digest('hex').slice(0, 8)}`;
+
+  await writeFile(join(DIST, 'sw.js'), fonteDoServiceWorker({ cache, precache, base: BASE }), 'utf8');
+  return { arquivos: precache.length, cache };
+}
+
 async function escrever(caminho, html) {
   const destino = join(DIST, semBase(caminho).replace(/^\//, ''), 'index.html');
   await mkdir(dirname(destino), { recursive: true });
@@ -416,6 +444,11 @@ async function escrever(caminho, html) {
 
 async function principal() {
   const { PROFISSOES, duvidasComuns } = await carregarProfissoes();
+
+  const icones = gerarIcones();
+  for (const { lado, png } of icones) {
+    await writeFile(join(DIST, `icone-${lado}.png`), png);
+  }
 
   // O vite gerou dist/index.html para a SPA; ele passa a viver em /app/.
   const spa = await readFile(join(DIST, 'index.html'), 'utf8');
@@ -445,11 +478,21 @@ ${urls.map((u) => `  <url><loc>${SITE}${u}</loc></url>`).join('\n')}
     JSON.stringify({
       name: 'Orça no ZAP — orçamentos em 2 minutos',
       short_name: 'Orça no ZAP',
+      description:
+        'Monte orçamentos profissionais e envie pelo WhatsApp. Funciona sem internet.',
       start_url: `${BASE}app/`,
+      scope: BASE,
       display: 'standalone',
+      orientation: 'portrait',
       background_color: '#f8fafc',
       theme_color: '#059669',
       lang: 'pt-BR',
+      icons: icones.map(({ lado }) => ({
+        src: `${BASE}icone-${lado}.png`,
+        sizes: `${lado}x${lado}`,
+        type: 'image/png',
+        purpose: 'any',
+      })),
     }),
     'utf8',
   );
@@ -457,7 +500,10 @@ ${urls.map((u) => `  <url><loc>${SITE}${u}</loc></url>`).join('\n')}
   // GitHub Pages ignora arquivos que começam com _ sem isto.
   await writeFile(join(DIST, '.nojekyll'), '', 'utf8');
 
+  const sw = await escreverServiceWorker();
+
   console.log(`SEO: ${paginas.length} páginas + sitemap com ${urls.length} URLs`);
+  console.log(`Offline: service worker com ${sw.arquivos} arquivos no precache`);
 }
 
 principal().catch((erro) => {
