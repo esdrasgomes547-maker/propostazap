@@ -69,7 +69,7 @@ export function Assinar({ app }: { app: App }) {
   }
 
   const mensagemComprovante = [
-    'Olá! Acabei de pagar o PropostaZap Pro.',
+    'Olá! Acabei de pagar o Orça no ZAP Pro.',
     '',
     `Plano: ${escolhido.nome} (${formatarCentavos(escolhido.precoCentavos)})`,
     'Segue o comprovante do PIX em anexo.',

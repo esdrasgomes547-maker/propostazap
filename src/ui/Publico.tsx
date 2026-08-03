@@ -64,7 +64,7 @@ export function Publico({ token }: { token: string }) {
       </div>
       <Documento empresa={estado.doc.empresa} proposta={estado.doc.proposta} />
       <p className="sem-impressao pb-8 text-center text-xs text-slate-400">
-        Feito com PropostaZap — orçamento profissional em 2 minutos, grátis.
+        Feito com Orça no ZAP — orçamento profissional em 2 minutos, grátis.
       </p>
     </div>
   );

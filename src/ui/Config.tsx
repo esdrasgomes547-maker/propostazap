@@ -87,7 +87,7 @@ export function Config({ app }: { app: App }) {
     const url = URL.createObjectURL(new Blob([conteudo], { type: 'application/json' }));
     const a = document.createElement('a');
     a.href = url;
-    a.download = `propostazap-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `orca-no-zap-backup-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
   }

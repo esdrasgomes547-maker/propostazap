@@ -1,4 +1,4 @@
-# Plano de tráfego — PropostaZap
+# Plano de tráfego — Orça no ZAP
 
 Estratégia: **zero verba de mídia**. Todo o crescimento vem de conteúdo indexável e de
 distribuição orgânica. Anúncio pago fica de fora por decisão, não por limitação.
@@ -13,7 +13,7 @@ PDF genérico.
 
 O site responde exatamente essa busca e entrega a ferramenta na mesma página. O visitante
 não precisa se cadastrar para ter valor: cria o orçamento, envia pelo WhatsApp, e o link
-que ele manda carrega a assinatura “Feito com PropostaZap” — cada orçamento enviado vira
+que ele manda carrega a assinatura “Feito com Orça no ZAP” — cada orçamento enviado vira
 uma impressão de marca para um cliente final.
 
 ## O que já está feito e no ar

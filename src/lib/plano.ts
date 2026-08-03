@@ -42,7 +42,7 @@ export const PLANOS: Plano[] = [
 
 export const PIX = {
   chave: env('VITE_PIX_CHAVE'),
-  nome: env('VITE_PIX_NOME', 'PropostaZap'),
+  nome: env('VITE_PIX_NOME', 'Orca no ZAP'),
   cidade: env('VITE_PIX_CIDADE', 'BRASIL'),
 };
 
