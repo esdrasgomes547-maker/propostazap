@@ -48,8 +48,8 @@ export const PLANOS: Plano[] = [
  *  cliente pagando sem ninguém correr atrás. O Pix continua aqui como
  *  alternativa para quem prefere pagar avulso. */
 export const ASAAS: Record<Plano['id'], string> = {
-  anual: env('VITE_ASAAS_ANUAL'),
-  mensal: env('VITE_ASAAS_MENSAL'),
+  anual: env('VITE_ASAAS_ANUAL', 'https://www.asaas.com/c/w31ym2iisvpuaoc7'),
+  mensal: env('VITE_ASAAS_MENSAL', 'https://www.asaas.com/c/a0md4oi2t8dlbbua'),
 };
 
 export const ASAAS_PRONTO = Object.values(ASAAS).some(l => l.length > 0);
