@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { formatarVencimento } from '../lib/license';
 import { formatarCentavos } from '../lib/money';
 import { gerarBrCode } from '../lib/pix';
-import { COBRANCA_CONFIGURADA, PIX, PLANOS, WHATSAPP_SUPORTE, type Plano } from '../lib/plano';
+import { ASAAS, ASAAS_PRONTO, COBRANCA_CONFIGURADA, PIX, PLANOS, WHATSAPP_SUPORTE, type Plano } from '../lib/plano';
 import { irPara } from '../lib/router';
 import type { App } from '../lib/useApp';
 import { linkWhatsApp } from '../lib/whatsapp';
@@ -154,9 +154,30 @@ export function Assinar({ app }: { app: App }) {
       </div>
       )}
 
+      {/* Caminho automático primeiro: assinatura pelo Asaas cobra sozinha todo
+          mês e libera sem ninguém conferir comprovante à mão. O PIX avulso fica
+          abaixo, para quem prefere pagar de uma vez. */}
+      {ASAAS_PRONTO && ASAAS[escolhido.id] && (
+        <Cartao>
+          <Titulo>Assinar agora</Titulo>
+          <p className="mb-3 text-sm text-slate-600">
+            Pagamento pelo Asaas — PIX ou boleto, cobrado automaticamente a cada renovação.
+            Você recebe a cobrança por e-mail antes de vencer, e o acesso libera sozinho.
+          </p>
+          <Botao
+            variante="primario"
+            aoClicar={() =>
+              globalThis.open(ASAAS[escolhido.id], '_blank', 'noopener,noreferrer')
+            }
+          >
+            Assinar {escolhido.nome} · {formatarCentavos(escolhido.precoCentavos)}
+          </Botao>
+        </Cartao>
+      )}
+
       {COBRANCA_CONFIGURADA && (
         <Cartao>
-          <Titulo>Como pagar</Titulo>
+          <Titulo>{ASAAS_PRONTO ? 'Ou pague avulso no PIX' : 'Como pagar'}</Titulo>
           <ol className="space-y-4">
             <Passo numero={1} titulo="Copie o código PIX">
               <p className="mb-2">

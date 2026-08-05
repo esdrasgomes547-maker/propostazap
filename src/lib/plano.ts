@@ -40,6 +40,20 @@ export const PLANOS: Plano[] = [
   },
 ];
 
+/** Cobrança pelo Asaas: link de assinatura por plano.
+ *
+ *  Pix estático resolve o primeiro pagamento e cria trabalho no segundo —
+ *  alguém precisa lembrar de cobrar cada cliente todo mês, conferir comprovante
+ *  e emitir licença na mão. O Asaas cobra sozinho, avisa quando cai e mantém o
+ *  cliente pagando sem ninguém correr atrás. O Pix continua aqui como
+ *  alternativa para quem prefere pagar avulso. */
+export const ASAAS: Record<Plano['id'], string> = {
+  anual: env('VITE_ASAAS_ANUAL'),
+  mensal: env('VITE_ASAAS_MENSAL'),
+};
+
+export const ASAAS_PRONTO = Object.values(ASAAS).some(l => l.length > 0);
+
 export const PIX = {
   chave: env('VITE_PIX_CHAVE'),
   nome: env('VITE_PIX_NOME', 'Orca no ZAP'),
