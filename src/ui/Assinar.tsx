@@ -109,16 +109,19 @@ export function Assinar({ app }: { app: App }) {
 
       <div>
         <h1 className="text-xl font-bold text-slate-900">
-          {COBRANCA_CONFIGURADA ? 'Assinar o Pro' : 'Ativar o Pro'}
+          {COBRANCA_CONFIGURADA || ASAAS_PRONTO ? 'Assinar o Pro' : 'Ativar o Pro'}
         </h1>
         <p className="mt-1 text-sm text-slate-600">
-          {COBRANCA_CONFIGURADA
-            ? 'Orçamentos ilimitados. Pagamento por PIX, sem cartão e sem cadastro.'
+          {COBRANCA_CONFIGURADA || ASAAS_PRONTO
+            ? 'Orçamentos ilimitados. Escolha o plano e pague em um minuto.'
             : 'Cole abaixo o código de ativação que você recebeu.'}
         </p>
       </div>
 
-      {COBRANCA_CONFIGURADA && (
+      {/* O seletor precisa aparecer sempre que existir algum meio de pagar —
+          antes ele dependia só da chave PIX, e sem ela o cliente ficava preso
+          ao primeiro plano da lista, sem conseguir escolher o mensal. */}
+      {(COBRANCA_CONFIGURADA || ASAAS_PRONTO) && (
       <div className="grid gap-3 sm:grid-cols-2">
         {PLANOS.map((plano) => {
           const ativo = plano.id === escolhido.id;
@@ -161,8 +164,9 @@ export function Assinar({ app }: { app: App }) {
         <Cartao>
           <Titulo>Assinar agora</Titulo>
           <p className="mb-3 text-sm text-slate-600">
-            Pagamento pelo Asaas — PIX ou boleto, cobrado automaticamente a cada renovação.
-            Você recebe a cobrança por e-mail antes de vencer, e o acesso libera sozinho.
+            Pagamento pelo Asaas — boleto ou cartão, cobrado automaticamente a cada
+            renovação. Você recebe a cobrança por e-mail antes de vencer, e o acesso
+            libera sozinho.
           </p>
           <Botao
             variante="primario"
